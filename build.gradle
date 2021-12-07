@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    annotationProcessor 'org.apache.velocity:velocity:1.7'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+
+    implementation group: 'com.j2html', name: 'j2html', version: '1.5.0'
+
+
+
+    // Javalin for server
+    implementation 'io.javalin:javalin:4.1.1'
+    implementation 'org.slf4j:slf4j-simple:1.7.32'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+
+    // project lombok compile processor
+    compileOnly 'org.projectlombok:lombok:1.18.22'
+    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    // project lombok test processor
+    testCompileOnly 'org.projectlombok:lombok:1.18.22'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+    //GSON for json parsing
+    implementation 'com.google.code.gson:gson:2.8.9'
+
+
+    implementation 'mysql:mysql-connector-java:8.0.25'
+
+    implementation group: 'org.apache.velocity', name: 'velocity-engine-core', version: '2.3'
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'Backend.App'
+}
+
+tasks.named('test') {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}
+
+test {
+    useJUnitPlatform()
+}
