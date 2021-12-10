@@ -7,10 +7,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-public class User extends  DatabaseRecord{
+public class User extends DataBaseEmailRecord {
 
 
 
@@ -18,6 +19,10 @@ public class User extends  DatabaseRecord{
      *
      *
      * Private variables
+     * @firstname User First Name
+     * @lastname User Last Name
+     * @password User Password
+     * @productList User's list of products
      *
      */
 
@@ -42,31 +47,29 @@ public class User extends  DatabaseRecord{
      */
 
     static final String DB_ID = "id";
-    static final String DB_firstname = "firstname";
-    static final String DB_lastname = "lastname";
-    static final String DB_email = "email";
-    static final String DB_password = "password";
-    static final String DB_dateCreated = "dateCreated";
+    static final String DB_FIRSTNAME = "firstname";
+    static final String DB_LASTNAME = "lastname";
+    static final String DB_EMAIL = "email";
+    static final String DB_PASSWORD = "password";
+    static final String DB_DATE_CREATED = "dateCreated";
 
     /**
-     * * Testing purposes
-     * * Might delete later
      *
-     * @param ID User ID
      * @param firstName User firstname
      * @param lastName User lastname
      * @param email User email
      * @param password User password
+     *
      */
 
+    public User(String firstName, String lastName, String email, String password) {
 
-    public User(int ID, String firstName, String lastName, String email, String password) {
-        this.id = ID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = password;
         this.productList = new ArrayList<>();
+        this.dateCreated = new Date();
 
     }
 
@@ -75,9 +78,18 @@ public class User extends  DatabaseRecord{
 
     }
 
+    /**
+     * Creates User from the DataBase
+     * @param result Database query result
+     * @throws SQLException
+     */
+
     public User(ResultSet result) throws SQLException {
         fill(result);
     }
+
+
+
 
 
     public boolean addProduct(Product product){
@@ -91,7 +103,7 @@ public class User extends  DatabaseRecord{
             }
 
         }
-       return false;
+        return false;
     }
 
     public List<Product> getProductList() throws SQLException {
@@ -101,27 +113,16 @@ public class User extends  DatabaseRecord{
 
     private void fill(ResultSet result) throws SQLException {
         this.id = Integer.parseInt(result.getString(User.DB_ID));
-        this.firstName = result.getString(User.DB_firstname);
-        this.lastName =  result.getString(User.DB_lastname);
-        this.email =  result.getString(User.DB_email);
-        this.password =  result.getString(User.DB_password);
-        this.dateTimeCreated = result.getString(User.DB_dateCreated);
-        this.productList = getProductList();
+        this.firstName = result.getString(User.DB_FIRSTNAME);
+        this.lastName =  result.getString(User.DB_LASTNAME);
+        this.email =  result.getString(User.DB_EMAIL);
+        this.password =  result.getString(User.DB_PASSWORD);
+        this.dateCreated = result.getDate(User.DB_DATE_CREATED);
+
 
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", email='" + email + '\'' +
-                ", dateTimeCreated='" + dateTimeCreated + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", password='" + password + '\'' +
-                ", productList=" + productList +
-                '}';
-    }
+
 
     @Override
     public boolean equals(Object object) {
@@ -129,6 +130,40 @@ public class User extends  DatabaseRecord{
         if (!(object instanceof User user)) return false;
         if (!super.equals(object)) return false;
         return super.equals(object) && Objects.equals(password, user.password) ;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", dateCreated=" + dateCreated +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", password='" + password + '\'' +
+                ", productList=" + productList +
+                '}';
+    }
+
+
+    @Override
+    protected int dbSave() throws SQLException {
+        if(getId() < 0){
+            return dbAdd();
+        }else
+            return dbUpdate();
+
+    }
+
+    @Override
+    public int dbAdd() throws SQLException {
+        setId(DAL.addUser(this));
+        return getId();
+    }
+
+    @Override
+    protected int dbUpdate() throws SQLException {
+        return DAL.updateUser(this);
     }
 
 

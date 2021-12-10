@@ -1,11 +1,9 @@
 package Backend;
 
-import Backend.Controllers.HomeController;
+import Backend.Controllers.IndexController;
+import Backend.Controllers.UserController;
 import io.javalin.Javalin;
-import io.javalin.core.util.RouteOverviewPlugin;
 import io.javalin.http.staticfiles.Location;
-
-import static org.eclipse.jetty.util.component.LifeCycle.start;
 
 public class Server {
 
@@ -14,18 +12,19 @@ public class Server {
 
 
 
+        Javalin app = Javalin.create(config -> {
+            config.addStaticFiles("C:\\Users\\Daniel\\Desktop\\CollegeMarketDemo\\src\\main\\resources\\public", Location.EXTERNAL);
+        }).start(8000);
 
-        Javalin server = Javalin.create(config -> {
-            config.addStaticFiles("/public", Location.CLASSPATH);
-            config.registerPlugin(new RouteOverviewPlugin("/routes"));
-        }).start(7000);
-
-        server.get("", HomeController.homePage);
-
-
+        app.get("", IndexController.IndexPage);
+        app.get("/create", UserController.signUpPage);
+        app.post("/create",UserController.signUpPost );
+        app.get("/login", UserController.loginPage);
+        app.post("/login", UserController.loginPagePost);
+        app.get("/test", IndexController.test);
 
 
-        server.get("/welcome", ctx -> ctx.html("<h1>Welcome to my website Demo</h1>"));
+
 
 
 

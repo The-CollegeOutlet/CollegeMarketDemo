@@ -8,15 +8,18 @@ DROP PROCEDURE IF EXISTS GetUserForProduct;
 
 
 DROP PROCEDURE IF EXISTS AddImages;
-DROP PROCEDURE IF EXISTS GetImages;
+DROP PROCEDURE IF EXISTS GetImage;
 DROP PROCEDURE IF EXISTS EditImage;
 DROP PROCEDURE IF EXISTS GetAllImages;
+DROP PROCEDURE IF EXISTS GetImagesforProduct;
+
 
 DROP PROCEDURE IF EXISTS AddUser;
 DROP PROCEDURE IF EXISTS EditUser;
 DROP PROCEDURE IF EXISTS GetUser;
 DROP PROCEDURE IF EXISTS GetAllUsers;
 DROP PROCEDURE IF EXISTS GetAllUserProducts;
+DROP PROCEDURE IF EXISTS GetUserByEmail;
 
 
 
@@ -34,11 +37,14 @@ DROP PROCEDURE IF EXISTS GetAllUserProducts;
 
 DELIMITER //
 
-CREATE PROCEDURE AddProducts(OUT id_check int(11), IN _type VARCHAR(20),IN _description VARCHAR(200)
-                           , IN _price DECIMAL(13,2), emailCheck VARCHAR(80), IN _dateTime DATETIME )
+CREATE PROCEDURE AddProducts(OUT _id int(11), IN _name varchar(40), IN _type VARCHAR(20),IN _description VARCHAR(200)
+                           , IN _price DECIMAL(13,2), _email VARCHAR(80), IN _dateCreated DATE )
 BEGIN
-    INSERT INTO products(ID, TYPE, DESCRIPTION,  PRICE, EMAIL, DATECREATED)
-    VALUES (id_check, _type, _description, _price, emailCheck, _dateTime);
+    INSERT INTO products(NAME ,TYPE, DESCRIPTION,  PRICE, EMAIL, DATECREATED)
+    VALUES (_name , _type, _description, _price, _email, _dateCreated);
+
+    SET _id = LAST_INSERT_ID();
+
 
 END //
 
@@ -52,19 +58,20 @@ DELIMITER ;
  */
 
 DELIMITER //
-CREATE PROCEDURE EditProduct(OUT id_check int(11), IN _type VARCHAR(20),IN _description VARCHAR(200)
-, IN _price DECIMAL(13,2), emailCheck VARCHAR(80), IN _dateTime DATETIME )
+CREATE PROCEDURE EditProduct(IN _id int(11), IN _name varchar(40),IN _type VARCHAR(20),IN _description VARCHAR(200)
+, IN _price DECIMAL(13,2), _email VARCHAR(80), IN _dateCreated date )
 
 BEGIN
     UPDATE products
     SET
+        name = _name,
         type = _type,
         description = _description,
         price = _price,
-        DATECREATED = _dateTime
+        DATECREATED = _dateCreated
 
     WHERE
-          id = id_check && email = emailCheck;
+          id = _id && email = _email;
 
 END //
 
@@ -92,13 +99,14 @@ DELIMITER ;
 DELIMITER //
 
 CREATE PROCEDURE GetAllUserProducts(
-    IN emailCheck VARCHAR(80)
+    IN _email VARCHAR(80)
 )
 BEGIN
-    SELECT products.id, products.type, products.description,
+    SELECT products.id, products.name, products.type, products.description,
            products.price, products.email, products.dateCreated
+
     FROM products,users
-    WHERE products.email = emailCheck && users.email = products.email;
+    WHERE products.email = _email && users.email = products.email;
 END //
 
 DELIMITER ;
@@ -129,22 +137,43 @@ DELIMITER ;
 
 
 /**
+  @@returns the image associated with the id
+
+ */
+
+DELIMITER //
+
+CREATE PROCEDURE GetImage(IN _id INT(11))
+BEGIN
+
+    SELECT images.id, images.image, images.dateCreated
+    FROM images
+    WHERE images.id = _id;
+
+END //
+
+DELIMITER ;
+
+
+
+/**
   @@Gets all images associated with a product
 
  */
 
 DELIMITER //
 
-CREATE PROCEDURE GetImages(IN _id INT(11))
+CREATE PROCEDURE GetImagesforProduct(IN _id INT(11))
 BEGIN
 
-    SELECT images.image, images.id
+    SELECT images.id, images.image, images.dateCreated
     FROM images, products
-    WHERE images.id = _id && images.id = products.id;
+    WHERE images.productID = _id && images.productID = products.id;
 
 END //
 
 DELIMITER ;
+
 
 /**
   @@Adds all Images for a product
@@ -153,10 +182,13 @@ DELIMITER ;
 
 DELIMITER //
 
-CREATE PROCEDURE AddImages( IN _id INT(11) ,IN emailCheck VARCHAR(80), IN _images longblob)
+CREATE PROCEDURE AddImages( OUT _id int(11),IN _image VARCHAR(50), IN _productID int(11), IN _dateCreated DATE)
 BEGIN
-    INSERT INTO images
-        VALUES(_id, emailCheck, _images);
+
+    INSERT INTO images( IMAGE, PRODUCTID, DATECREATED)
+        VALUES( _image, _productID, _dateCreated);
+
+    SET _id = LAST_INSERT_ID();
 
 END //
 
@@ -170,15 +202,16 @@ DELIMITER ;
  */
 
 DELIMITER //
-CREATE PROCEDURE EditImage(IN _id INT(11) ,IN emailCheck VARCHAR(80), IN _images longblob)
+CREATE PROCEDURE EditImage( IN _id INT(11) ,IN _image VARCHAR(50), IN _productID int(11),IN _dateCreated DATE)
 
 BEGIN
     UPDATE images
     SET
-        image = _images
+        image = _image,
+        dateCreated = _dateCreated
 
     WHERE
-         id = _id && email = emailCheck;
+         id = _id && images.productID = _productID;
 
 END //
 
@@ -194,7 +227,7 @@ DELIMITER //
 
 CREATE PROCEDURE GetAllImages()
 BEGIN
-    SELECT image  FROM images;
+    SELECT *  FROM images;
 END //
 
 DELIMITER ;
@@ -207,21 +240,21 @@ DELIMITER ;
 */
 
 
-/**@@param: Takes in email and password
+/**@@param: Takes in User ID
 
-  @@Gets user that matches the parameters
+  @@Gets user that matches the parameter
  */
 
 DELIMITER //
 
 
-CREATE PROCEDURE GetUser(
-    IN emailCheck VARCHAR(80), IN passwordCheck varchar(70)
+CREATE PROCEDURE GetUser( IN _id int(11)
+
 )
 BEGIN
     SELECT *
     FROM users
-    WHERE email = emailCheck && password = passwordCheck;
+    WHERE id = _id;
 END //
 
 DELIMITER ;
@@ -233,12 +266,15 @@ DELIMITER ;
  */
 
 DELIMITER //
-CREATE PROCEDURE AddUser(OUT id_check INT(11), IN first_Name VARCHAR(35), IN last_Name VARCHAR(35),
-                            IN emailCheck VARCHAR(80),IN Pass_Word VARCHAR(70), IN Date_Created DATETIME)
+CREATE PROCEDURE AddUser(OUT _id int(11),IN _firstName VARCHAR(35), IN _lastName VARCHAR(35),
+                            IN _email VARCHAR(80),IN _password VARCHAR(70), IN _dateCreated DATE)
 
 BEGIN
-    INSERT INTO users(ID, FIRSTNAME, LASTNAME, EMAIL, PASSWORD, DATECREATED)
-    VALUES (id_check, first_Name, last_Name, emailCheck,Pass_Word, Date_Created );
+    INSERT INTO users(FIRSTNAME, LASTNAME, EMAIL, PASSWORD, DATECREATED)
+    VALUES ( _firstName, _lastName, _email,_password, _dateCreated );
+
+    SET _id = LAST_INSERT_ID();
+
 
 END //
 
@@ -252,19 +288,19 @@ DELIMITER ;
  */
 
 DELIMITER //
-CREATE PROCEDURE EditUser(OUT id_check INT(11), IN first_Name VARCHAR(35), IN last_Name VARCHAR(35),
-                         IN emailCheck VARCHAR(80),IN Pass_Word VARCHAR(70), IN Date_Created DATETIME)
+CREATE PROCEDURE EditUser(IN _id INT(11), IN _firstName VARCHAR(35), IN _lastName VARCHAR(35),
+                         IN _email VARCHAR(80),IN _password VARCHAR(70), IN _dateCreated DATE)
 
 BEGIN
     UPDATE users
     SET
-        FIRSTNAME = first_Name,
-        LASTNAME = last_Name,
-        EMAIL = emailCheck,
-        PASSWORD = Pass_Word,
-        DATECREATED = Date_Created
+        FIRSTNAME = _firstName,
+        LASTNAME = _lastName,
+        EMAIL = _email,
+        PASSWORD = _password,
+        DATECREATED = _dateCreated
     WHERE
-          id = id_check && email = emailCheck;
+          id = _id && email = _email;
 
 END //
 
@@ -284,4 +320,28 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+
+/**
+Returns the user by email
+
+ */
+DELIMITER //
+
+
+CREATE PROCEDURE GetUserByEmail( IN _email VARCHAR(80))
+BEGIN
+    SELECT *  FROM users
+    WHERE email = _email;
+END //
+
+DELIMITER ;
+
+
+
+
+
+
+
 

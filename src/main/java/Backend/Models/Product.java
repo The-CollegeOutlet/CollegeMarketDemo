@@ -4,9 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
-public class Product extends DatabaseRecord {
+public class Product extends DataBaseEmailRecord {
 
 
     /**
@@ -16,7 +17,9 @@ public class Product extends DatabaseRecord {
      *
      *
      */
-
+    @Getter
+    @Setter
+    private String name;
     @Getter
     @Setter
     private Category type;
@@ -39,18 +42,19 @@ public class Product extends DatabaseRecord {
      */
 
      static final String DB_ID = "id";
-     static final String DB_Type = "type";
-     static final String DB_Description = "description";
-     static final String DB_Price = "price";
-     static final String DB_email = "email";
-     static final String DB_dateCreated = "dateCreated";
+     static final String DB_NAME = "name";
+     static final String DB_TYPE = "type";
+     static final String DB_DESCRIPTION = "description";
+     static final String DB_PRICE = "price";
+     static final String DB_EMAIL = "email";
+     static final String DB_DATE_CREATED = "dateCreated";
 
 
     /**
      * *Testing purposes
      * * Might delete later
      *
-     * @param ID Product ID
+     * @param name Product name
      * @param type Product type
      * @param description Product Description
      * @param images Product Images
@@ -58,14 +62,14 @@ public class Product extends DatabaseRecord {
      * @param email Users email(ISU) address
      */
 
-    public Product(int ID, String email, Category type, String description, List<Image> images, float price) {
-        this.id = ID;
+    public Product(String name, String email, Category type, String description, List<Image> images, float price) {
+        this.name = name;
         this.type = type;
         this.description = description;
         this.imageList = images;
         this.price = price;
         this.email = email;
-
+        this.dateCreated = new Date();
     }
 
     /**
@@ -129,35 +133,33 @@ public class Product extends DatabaseRecord {
 
     private void fill(ResultSet result) throws SQLException {
         this.id = result.getInt(Product.DB_ID);
-        this.type = Category.valueOf(result.getString(Product.DB_Type));
-        this.description = result.getString(Product.DB_Description);
-        this.price = result.getFloat(Product.DB_Price);
-        this.dateTimeCreated = result.getString(Product.DB_dateCreated);
-        this.email = result.getString(Product.DB_email);
-        this.imageList = getImageList();
+        this.name = result.getString(Product.DB_NAME);
+        this.type = Category.valueOf(result.getString(Product.DB_TYPE));
+        this.description = result.getString(Product.DB_DESCRIPTION);
+        this.price = result.getFloat(Product.DB_PRICE);
+        this.email = result.getString(Product.DB_EMAIL);
+        this.dateCreated = result.getDate(Product.DB_DATE_CREATED);
+
+    }
+
+
+    @Override
+    protected int dbSave() throws SQLException {
+        if(getId() < 0){
+            return dbAdd();
+        }else {
+            return dbUpdate();
+        }
     }
 
     @Override
-    public boolean equals(Object object) {
-        if (this == object) return true;
-        if (!(object instanceof Product product)) return false;
-        if (!super.equals(object)) return false;
-        return super.equals(object) &&
-                Float.compare(product.price, price) == 0
-                && type == product.type;
+    public int dbAdd() throws SQLException {
+        setId(DAL.addProduct(this));
+        return getId();
     }
 
     @Override
-    public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", email='" + email + '\'' +
-                ", dateTimeCreated='" + dateTimeCreated + '\'' +
-                ", type=" + type +
-                ", description='" + description + '\'' +
-                ", imageList=" + imageList +
-                ", price=" + price +
-                ", user=" + user +
-                '}';
+    protected int dbUpdate() throws SQLException {
+        return DAL.updateProduct(this);
     }
 }
