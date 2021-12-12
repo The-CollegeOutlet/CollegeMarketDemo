@@ -1,8 +1,8 @@
-package Backend.Views;
+package Backend.Views.User;
 
 import static j2html.TagCreator.*;
 
-public class LoginView {
+public class Login {
 
 
     /**

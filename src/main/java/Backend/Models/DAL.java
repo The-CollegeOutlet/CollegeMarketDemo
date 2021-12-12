@@ -152,7 +152,7 @@ public class DAL {
      * @throws SQLException
      */
 
-    static User getUserByEmail(String email) throws SQLException {
+    public static User getUserByEmail(String email) throws SQLException {
         sqlCommand = "{call GetUserByEmail(?) }";
         User user = null;
 

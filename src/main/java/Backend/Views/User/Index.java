@@ -1,10 +1,11 @@
-package Backend.Views;
+package Backend.Views.User;
 
 import Backend.Models.User;
+import Backend.Util.Path;
 
 import static j2html.TagCreator.*;
 
-public class UserView {
+public class Index {
 
 
 
@@ -22,7 +23,16 @@ public class UserView {
               head(),
 
               body(
-                      text(user.toString())
+                      div(text(user.toString())
+                      ),
+
+                      br(),
+
+                      div(
+                        a("Home Page").withHref(Path.HOME)
+                      ),
+
+                      a("Log out").withHref(Path.LOGOUT)
               )
 
         ).render();

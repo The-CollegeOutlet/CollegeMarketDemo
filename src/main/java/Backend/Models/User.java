@@ -147,7 +147,7 @@ public class User extends DataBaseEmailRecord {
 
 
     @Override
-    protected int dbSave() throws SQLException {
+    public int dbSave() throws SQLException {
         if(getId() < 0){
             return dbAdd();
         }else
@@ -156,7 +156,7 @@ public class User extends DataBaseEmailRecord {
     }
 
     @Override
-    public int dbAdd() throws SQLException {
+    protected int dbAdd() throws SQLException {
         setId(DAL.addUser(this));
         return getId();
     }

@@ -12,12 +12,14 @@ public abstract class DataBaseRecord {
     @Setter
     protected int id = -1;
 
+
+
     @Getter
     @Setter
     protected Date dateCreated;
 
 
-    public abstract int dbAdd() throws SQLException;
+    protected abstract int dbAdd() throws SQLException;
     protected abstract int dbSave() throws SQLException;
     protected abstract int dbUpdate() throws SQLException;
 }

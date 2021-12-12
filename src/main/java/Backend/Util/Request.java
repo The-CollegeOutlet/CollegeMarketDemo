@@ -25,4 +25,27 @@ public class Request {
         return ctx.formParam("confirm-password");
     }
 
+
+    public static String getSessionCurrentUser(Context ctx) {
+        return ctx.sessionAttribute("currentUser");
+    }
+
+    public static boolean removeSessionAttrLoggedOut(Context ctx) {
+        String loggedOut = ctx.sessionAttribute("loggedOut");
+        ctx.sessionAttribute("loggedOut", null);
+        return loggedOut != null;
+    }
+
+    public static String removeSessionAttrLoginRedirect(Context ctx) {
+        String loginRedirect = ctx.sessionAttribute("loginRedirect");
+        ctx.sessionAttribute("loginRedirect", null);
+        return loginRedirect;
+    }
+
+
+    public static String getFormParamRedirect(Context ctx) {
+        return ctx.formParam("loginRedirect");
+    }
+
+
 }

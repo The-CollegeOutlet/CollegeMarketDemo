@@ -1,10 +1,8 @@
-package Backend.Views;
-
+package Backend.Views.User;
 
 import static j2html.TagCreator.*;
 
-
-public class SignupView {
+public class Create {
 
     public static String render(){
         return html(
@@ -78,12 +76,12 @@ public class SignupView {
                                                 .withValue("")
                                                 .isRequired(),
 
-                                       input().withType("submit").withValue("Submit")
+                                        input().withType("submit").withValue("Submit")
 
                                 ),
                                 p("By clicking the Sign up button, you are agree to our").with(
-                                br(),
-                                a("Terms and Conditions").withHref(""),
+                                        br(),
+                                        a("Terms and Conditions").withHref(""),
                                         text("and"),
 
                                         a("Policy And Privacy").withHref("")

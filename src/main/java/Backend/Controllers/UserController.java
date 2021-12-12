@@ -2,15 +2,17 @@ package Backend.Controllers;
 
 
 import Backend.Models.DAL;
-import Backend.Models.DAL.*;
 import Backend.Models.User;
-import Backend.Views.LoginView;
-import Backend.Views.SignupView;
-import Backend.Views.UserView;
+import Backend.Util.Path;
+import Backend.Util.ViewUtil;
+import Backend.Views.User.Create;
+import Backend.Views.User.Login;
+import Backend.Views.User.Index;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 
 import java.sql.SQLException;
+import java.util.Map;
 
 import static Backend.Util.Request.*;
 
@@ -22,17 +24,27 @@ public class UserController {
      * Renders the sign-up page
      */
 
-    public static Handler signUpPage = ctx -> {
+    public static Handler create = ctx -> {
 
-        ctx.html(SignupView.render());
+        ctx.html(Create.render());
     };
 
     /**
      * @GET Request
      * Renders the login page
      */
-    public static Handler loginPage = ctx -> {
-        ctx.html(LoginView.render());
+
+    public static Handler login = ctx -> {
+
+        Map<String, Object> model = ViewUtil.baseModel(ctx);
+
+        model.put("loggedOut", removeSessionAttrLoggedOut(ctx));
+        model.put("loginRedirect", removeSessionAttrLoginRedirect(ctx));
+
+        System.out.println(model.get("loggedOut"));
+        System.out.println(model.get("loginRedirect"));
+
+        ctx.html(Login.render());
     };
 
     /**
@@ -43,41 +55,155 @@ public class UserController {
      * else returns the sign-up page
      */
 
-    public static Handler signUpPost = ctx -> {
+    public static Handler createAction = ctx -> {
+
+        Map<String, Object> model = ViewUtil.baseModel(ctx);
 
         User user = null;
 
         if (validatePassword(ctx)) {
             user = bindObject(ctx);
 
-            if(user.dbAdd() > 0){
-                ctx.html(UserView.render(user));
-            }else {
-                ctx.html(SignupView.render());
+            if (user.dbSave() > 0) {
+
+
+                ctx.sessionAttribute("currentUser", getQueryEmail(ctx));
+                model.put("authenticationSucceeded", true);
+                ctx.sessionAttribute("model", user);
+                /*
+                  Redirects the user
+                 */
+                if (getFormParamRedirect(ctx) != null) {
+                    ctx.redirect(getFormParamRedirect(ctx));
+                }
+
+                ctx.redirect("/viewProfile/" + getQueryEmail(ctx));
+
+            } else {
+
+                // User wasn't added to the DataBase
+                ctx.html(Create.render());
             }
 
         } else {
-            ctx.html(SignupView.render());
+
+            /*
+              We also need to validate the user email
+              Email validation to be implemented
+             */
+            //The password didn't match or email
+            model.put("authenticationFailed", true);
+            ctx.html(Create.render());
 
         }
 
     };
 
-    public static Handler loginPagePost = ctx -> {
+    /**
+     * @POST Request
+     * Handles the User login action
+     * Gets the User from the DataBase
+     * Returns the User profile-page on successful login
+     * else returns the login-page with error
+     */
 
-        if(login(getQueryEmail(ctx),getQueryPassword(ctx)) != null){
-            User user = login(getQueryEmail(ctx),getQueryPassword(ctx));
-            ctx.html(UserView.render(user));
+    public static Handler loginAction = ctx -> {
 
-        }else{
-            ctx.html(SignupView.render());
+        Map<String, Object> model = ViewUtil.baseModel(ctx);
+        User user = login(getQueryEmail(ctx), getQueryPassword(ctx));
+
+        if (user != null) {
+
+            ctx.sessionAttribute("currentUser", getQueryEmail(ctx));
+            model.put("authenticationSucceeded", true);
+            ctx.sessionAttribute("model", user);
+            if (getFormParamRedirect(ctx) != null) {
+                ctx.redirect(getFormParamRedirect(ctx));
+            }
+            ctx.redirect("/viewProfile/" + getQueryEmail(ctx));
+
+        } else {
+            model.put("authenticationFailed", true);
+            ctx.html(Login.render());
         }
 
-        System.out.println(login(getQueryEmail(ctx),
-                getQueryPassword(ctx)));
+    };
 
+
+    /**
+     * Logs the user out
+     * Renders the login page
+     */
+
+    public static Handler logout = ctx -> {
+        ctx.sessionAttribute("currentUser", null);
+        ctx.sessionAttribute("loggedOut", "true");
+        ctx.sessionAttribute("model", null);
+        ctx.redirect(Path.LOGIN);
+    };
+
+
+    /**
+     * Renders the user profile
+     */
+    public static Handler index = ctx -> {
+
+        User user = ctx.sessionAttribute("model");
+
+        System.out.println(user);
+
+
+        if (user != null) {
+            ctx.html(Index.render(user));
+        }
 
     };
+
+    public static Handler loginBeforeviewProfile = ctx -> {
+        if (!ctx.path().startsWith("/viewProfile")) {
+            return;
+        }
+        if (ctx.sessionAttribute("currentUser") == null) {
+            ctx.sessionAttribute("loginRedirect", ctx.path());
+            ctx.redirect(Path.LOGIN);
+        }
+    };
+
+
+    public static Handler loginBeforeEdit = ctx -> {
+        if (!ctx.path().startsWith("/editProfile")) {
+            return;
+        }
+        if (ctx.sessionAttribute("currentUser") == null) {
+            ctx.sessionAttribute("loginRedirect", ctx.path());
+            ctx.redirect(Path.LOGIN);
+        }
+    };
+
+    public static Handler loginBeforeAddProduct = ctx -> {
+        if (!ctx.path().startsWith("/addProduct")) {
+            return;
+        }
+        if (ctx.sessionAttribute("currentUser") == null) {
+            ctx.sessionAttribute("loginRedirect", ctx.path());
+            ctx.redirect(Path.LOGIN);
+        }
+    };
+
+
+
+
+    /*
+      These are the private utility methods
+      utilized by the controller to handle user
+      requests
+     */
+
+
+    /**
+     * @param ctx User Request
+     * @return true if the passwords match
+     */
 
     private static boolean validatePassword(Context ctx) {
         return getQueryPassword(ctx).equals(getQueryConfirmPassword(ctx));
@@ -97,13 +223,8 @@ public class UserController {
      * @throws SQLException
      */
     private static User login(String email, String password) throws SQLException {
-        User user = DAL.getUser(email, password);
 
-        if (user != null) {
-
-            return user;
-        }
-        return null;
+        return DAL.getUser(email, password);
     }
 
 

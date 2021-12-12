@@ -1,11 +1,11 @@
 package Backend.Controllers;
 
-import Backend.Views.IndexView;
+import Backend.Views.Home.IndexView;
 import Backend.Views.TestView;
 import io.javalin.http.Handler;
 
 
-public class IndexController {
+public class HomeController {
 
     /**
      *
@@ -15,7 +15,7 @@ public class IndexController {
      */
 
 
-    public static Handler IndexPage =
+    public static Handler index =
             ctx -> ctx.html(IndexView.render());
 
     public static Handler test = ctx -> {

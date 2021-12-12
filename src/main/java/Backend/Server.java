@@ -1,31 +1,41 @@
 package Backend;
 
-import Backend.Controllers.IndexController;
+import Backend.Controllers.HomeController;
 import Backend.Controllers.UserController;
+import Backend.Util.Path;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
+
+import static io.javalin.apibuilder.ApiBuilder.before;
+import static io.javalin.apibuilder.ApiBuilder.get;
+import static io.javalin.apibuilder.ApiBuilder.post;
 
 public class Server {
 
 
-    public void newServer(){
-
+    public void newServer() {
 
 
         Javalin app = Javalin.create(config -> {
-            config.addStaticFiles("C:\\Users\\Daniel\\Desktop\\CollegeMarketDemo\\src\\main\\resources\\public", Location.EXTERNAL);
+            config.addStaticFiles("/public", Location.CLASSPATH);
         }).start(8000);
 
-        app.get("", IndexController.IndexPage);
-        app.get("/create", UserController.signUpPage);
-        app.post("/create",UserController.signUpPost );
-        app.get("/login", UserController.loginPage);
-        app.post("/login", UserController.loginPagePost);
-        app.get("/test", IndexController.test);
 
+        app.routes(() -> {
 
+            before(UserController.loginBeforeAddProduct);
+            before(UserController.loginBeforeviewProfile);
+            before(UserController.loginBeforeEdit);
+            get(Path.HOME, HomeController.index);
+            get(Path.CREATE, UserController.create);
+            post(Path.CREATE, UserController.createAction);
+            get(Path.LOGIN, UserController.login);
+            post(Path.LOGIN, UserController.loginAction);
+            get("/test", HomeController.test);
+            get(Path.PROFILE, UserController.index);
+            get(Path.LOGOUT, UserController.logout);
 
-
+        });
 
 
     }
