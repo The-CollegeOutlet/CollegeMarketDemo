@@ -14,7 +14,7 @@ public class ViewUtil {
     public static Map<String, Object> baseModel(Context ctx) throws SQLException {
 
         Map<String, Object> model = new HashMap<>();
-        model.put("currentUser", getSessionCurrentUser(ctx));
+       // model.put("currentUser", getSessionCurrentUser(ctx));
 
         return model;
     }

@@ -1,6 +1,7 @@
 package Backend;
 
 import Backend.Controllers.HomeController;
+import Backend.Controllers.ProductController;
 import Backend.Controllers.UserController;
 import Backend.Util.Path;
 import io.javalin.Javalin;
@@ -24,16 +25,29 @@ public class Server {
         app.routes(() -> {
 
             before(UserController.loginBeforeAddProduct);
-            before(UserController.loginBeforeviewProfile);
-            before(UserController.loginBeforeEdit);
+            before(UserController.loginBeforeViewProfile);
+            before(UserController.loginBeforeEditProfile);
+
             get(Path.HOME, HomeController.index);
-            get(Path.CREATE, UserController.create);
-            post(Path.CREATE, UserController.createAction);
+
+            get(Path.CREATEUSER, UserController.create);
+            post(Path.CREATEUSER, UserController.createAction);
+
+            get(Path.EDITUSER, UserController.edit);
+            post(Path.EDITUSER, UserController.editAction);
+
             get(Path.LOGIN, UserController.login);
             post(Path.LOGIN, UserController.loginAction);
-            get("/test", HomeController.test);
+
             get(Path.PROFILE, UserController.index);
+            get("/test", HomeController.test);
             get(Path.LOGOUT, UserController.logout);
+
+            get(Path.CREATEPRODUCT, ProductController.create);
+            post(Path.CREATEPRODUCT, ProductController.createAction);
+
+            get(Path.EDITPRODUCT, ProductController.edit);
+            post(Path.EDITPRODUCT, ProductController.edit);
 
         });
 

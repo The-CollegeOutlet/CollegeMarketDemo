@@ -30,6 +30,7 @@ public class Image extends DataBaseRecord{
 
     @Getter
     private File file;
+    private int productId;
     private Product product;
 
     /**
@@ -58,7 +59,7 @@ public class Image extends DataBaseRecord{
     /**
      *
      */
-    public Image(ResultSet result){
+    public Image(ResultSet result) throws SQLException {
         fill(result);
     }
 
@@ -73,18 +74,28 @@ public class Image extends DataBaseRecord{
         this.dateCreated = new Date();
     }
 
-    /**
-     *
-     * @return
-     */
-
-
-
-    public Product getProduct(){
-        return new Product(5);
+    private void setProduct() throws SQLException {
+        this.product = DAL.getProduct(productId);
     }
 
-    private void fill(ResultSet result){
+    /**
+     *
+     * @return Product of the Image
+     */
+
+    public Product getProduct() throws SQLException {
+        if (product == null){
+            setProduct();
+        }
+        return product;
+    }
+
+    private void fill(ResultSet result) throws SQLException {
+        this.id = result.getInt(DB_ID);
+        //this.file =
+        this.productId = result.getInt(DB_PRODUCTID);
+        this.dateCreated = result.getDate(Product.DB_DATE_CREATED);
+
 
     }
 
@@ -117,4 +128,6 @@ public class Image extends DataBaseRecord{
     protected int dbUpdate() throws SQLException {
         return DAL.updateImage(this);
     }
+
+
 }

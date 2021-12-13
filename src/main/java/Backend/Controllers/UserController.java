@@ -6,6 +6,7 @@ import Backend.Models.User;
 import Backend.Util.Path;
 import Backend.Util.ViewUtil;
 import Backend.Views.User.Create;
+import Backend.Views.User.Edit;
 import Backend.Views.User.Login;
 import Backend.Views.User.Index;
 import io.javalin.http.Context;
@@ -13,6 +14,7 @@ import io.javalin.http.Handler;
 
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Objects;
 
 import static Backend.Util.Request.*;
 
@@ -29,23 +31,6 @@ public class UserController {
         ctx.html(Create.render());
     };
 
-    /**
-     * @GET Request
-     * Renders the login page
-     */
-
-    public static Handler login = ctx -> {
-
-        Map<String, Object> model = ViewUtil.baseModel(ctx);
-
-        model.put("loggedOut", removeSessionAttrLoggedOut(ctx));
-        model.put("loginRedirect", removeSessionAttrLoginRedirect(ctx));
-
-        System.out.println(model.get("loggedOut"));
-        System.out.println(model.get("loginRedirect"));
-
-        ctx.html(Login.render());
-    };
 
     /**
      * @POST Request
@@ -66,18 +51,20 @@ public class UserController {
 
             if (user.dbSave() > 0) {
 
-
-                ctx.sessionAttribute("currentUser", getQueryEmail(ctx));
+              //  ctx.sessionAttribute("currentUser", getQueryEmail(ctx));
                 model.put("authenticationSucceeded", true);
                 ctx.sessionAttribute("model", user);
+                ctx.sessionAttribute("currentUser", user.getId());
+
                 /*
                   Redirects the user
                  */
                 if (getFormParamRedirect(ctx) != null) {
                     ctx.redirect(getFormParamRedirect(ctx));
+                } else {
+                    ctx.redirect(Path.PROFILE);
                 }
 
-                ctx.redirect("/viewProfile/" + getQueryEmail(ctx));
 
             } else {
 
@@ -99,6 +86,73 @@ public class UserController {
 
     };
 
+
+    public static Handler edit = ctx -> {
+
+        if (ctx.sessionAttribute("currentUser") != null) {
+            int id = (int) ctx.sessionAttribute("currentUser");
+            User user = DAL.getUser(id);
+
+            assert user != null;
+            ctx.html(Edit.render(user));
+        }
+    };
+
+    public static Handler editAction = ctx -> {
+
+        Map<String, Object> model = ViewUtil.baseModel(ctx);
+
+        User user = ctx.sessionAttribute("model");
+        if (user != null) {
+            int temp = user.getId();
+            System.out.println(temp);
+
+            if (validatePassword(ctx)) {
+
+                user = bindObject(ctx);
+                user.setId(temp);
+
+
+                if (user.dbSave() > 0) {
+                    model.put("authenticationSucceeded", true);
+                    ctx.sessionAttribute("model", user);
+
+                    ctx.redirect(Path.PROFILE);
+
+                } else {
+
+                    // User wasn't edited to the DataBase
+                    ctx.html(Edit.render(user));
+                }
+
+            }
+        } else {
+            // User password didn't validate(match the confirmation password field)
+            ctx.html(Edit.render(user));
+        }
+
+    };
+
+
+    /**
+     * @GET Request
+     * Renders the login page
+     */
+
+    public static Handler login = ctx -> {
+
+    //    Map<String, Object> model = ViewUtil.baseModel(ctx);
+
+      // model.put("loggedOut", removeSessionAttrLoggedOut(ctx));
+        // model.put("loginRedirect", removeSessionAttrLoginRedirect(ctx));
+
+      //  System.out.println(model.get("loggedOut"));
+     //   System.out.println(model.get("loginRedirect"));
+
+        ctx.html(Login.render());
+    };
+
+
     /**
      * @POST Request
      * Handles the User login action
@@ -114,13 +168,22 @@ public class UserController {
 
         if (user != null) {
 
-            ctx.sessionAttribute("currentUser", getQueryEmail(ctx));
+          //  ctx.sessionAttribute("currentUser", getQueryEmail(ctx));
+            ctx.sessionAttribute("currentUser", user.getId());
             model.put("authenticationSucceeded", true);
             ctx.sessionAttribute("model", user);
+
+
+            /*
+                  Redirects the user
+             */
+           // System.out.println(getFormParamRedirect(ctx));
             if (getFormParamRedirect(ctx) != null) {
                 ctx.redirect(getFormParamRedirect(ctx));
+            } else {
+                ctx.redirect(Path.PROFILE);
             }
-            ctx.redirect("/viewProfile/" + getQueryEmail(ctx));
+
 
         } else {
             model.put("authenticationFailed", true);
@@ -148,9 +211,8 @@ public class UserController {
      */
     public static Handler index = ctx -> {
 
-        User user = ctx.sessionAttribute("model");
-
-        System.out.println(user);
+        int id = (int) ctx.sessionAttribute("currentUser");
+        User user = DAL.getUser(id);
 
 
         if (user != null) {
@@ -159,7 +221,12 @@ public class UserController {
 
     };
 
-    public static Handler loginBeforeviewProfile = ctx -> {
+    /**
+     * These are before handlers might move them
+     * to their own class
+     */
+
+    public static Handler loginBeforeViewProfile = ctx -> {
         if (!ctx.path().startsWith("/viewProfile")) {
             return;
         }
@@ -170,7 +237,7 @@ public class UserController {
     };
 
 
-    public static Handler loginBeforeEdit = ctx -> {
+    public static Handler loginBeforeEditProfile = ctx -> {
         if (!ctx.path().startsWith("/editProfile")) {
             return;
         }
@@ -181,7 +248,7 @@ public class UserController {
     };
 
     public static Handler loginBeforeAddProduct = ctx -> {
-        if (!ctx.path().startsWith("/addProduct")) {
+        if (!ctx.path().startsWith("/createProduct")) {
             return;
         }
         if (ctx.sessionAttribute("currentUser") == null) {
@@ -190,6 +257,7 @@ public class UserController {
         }
     };
 
+    //Before handlers end
 
 
 
@@ -210,6 +278,7 @@ public class UserController {
     }
 
     private static User bindObject(Context ctx) {
+
         return new User(getQueryFirstName(ctx), getQueryLastName(ctx), getQueryEmail(ctx), getQueryPassword(ctx));
     }
 

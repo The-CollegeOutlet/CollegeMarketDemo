@@ -4,7 +4,7 @@ import Backend.Util.Path;
 
 import static j2html.TagCreator.*;
 
-public class IndexView {
+public class Index {
 
     public static String render() {
         return html(
@@ -57,7 +57,7 @@ public class IndexView {
 
                                 div(attrs(".user_icon"),
 
-                                        a().withHref(Path.CREATE).with(
+                                        a().withHref(Path.CREATEUSER).with(
                                                 i(attrs(".material-icons"),
                                                         "person_add")
                                         ),
@@ -99,7 +99,7 @@ public class IndexView {
                                                 ),
 
                                                 div(attrs(".sidebar_single_category"),
-                                                        a().withHref(Path.EDITPROFILE).with(
+                                                        a().withHref(Path.EDITUSER).with(
                                                                 i(attrs(".material-icons"),
                                                                         "manage_accounts"),
                                                                 span("Edit Profile")
@@ -110,7 +110,7 @@ public class IndexView {
                                                 ),
 
                                                 div(attrs(".sidebar_single_category"),
-                                                        a().withHref(Path.ADDPRODUCT).with(
+                                                        a().withHref(Path.CREATEPRODUCT).with(
                                                                 i(attrs(".material-icons"),
                                                                         "playlist_add"),
                                                                 span("Add Product")

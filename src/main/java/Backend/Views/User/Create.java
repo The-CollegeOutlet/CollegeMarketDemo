@@ -1,5 +1,7 @@
 package Backend.Views.User;
 
+import Backend.Util.Path;
+
 import static j2html.TagCreator.*;
 
 public class Create {
@@ -24,7 +26,7 @@ public class Create {
                                  * so we can reuse it for edit
                                  */
 
-                                form().withMethod("post").withAction("/create").with(
+                                form().withMethod("post").withAction(Path.CREATEUSER).with(
 
 
                                         label("First Name")

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -12,9 +13,7 @@ public class Product extends DataBaseEmailRecord {
 
     /**
      *
-     *
      * Private variables
-     *
      *
      */
     @Getter
@@ -22,7 +21,7 @@ public class Product extends DataBaseEmailRecord {
     private String name;
     @Getter
     @Setter
-    private Category type;
+    private Category category;
     @Getter
     @Setter
     private String description;
@@ -43,7 +42,7 @@ public class Product extends DataBaseEmailRecord {
 
      static final String DB_ID = "id";
      static final String DB_NAME = "name";
-     static final String DB_TYPE = "type";
+     static final String DB_CATEGORY = "category";
      static final String DB_DESCRIPTION = "description";
      static final String DB_PRICE = "price";
      static final String DB_EMAIL = "email";
@@ -55,18 +54,17 @@ public class Product extends DataBaseEmailRecord {
      * * Might delete later
      *
      * @param name Product name
-     * @param type Product type
+     * @param category Product type
      * @param description Product Description
-     * @param images Product Images
      * @param price Product price
      * @param email Users email(ISU) address
      */
 
-    public Product(String name, String email, Category type, String description, List<Image> images, float price) {
+    public Product(String name, String email, Category category, String description, float price) {
         this.name = name;
-        this.type = type;
+        this.category = category;
         this.description = description;
-        this.imageList = images;
+        this.imageList = new ArrayList<>();
         this.price = price;
         this.email = email;
         this.dateCreated = new Date();
@@ -91,6 +89,14 @@ public class Product extends DataBaseEmailRecord {
         fill(result);
     }
 
+    private void setImageList() throws SQLException {
+        this.imageList = DAL.getImages(this);
+    }
+
+    private void setUser() throws SQLException {
+        this.user = DAL.getUserByEmail(this.email);
+    }
+
     /**
      *
      * @return The products owner
@@ -98,9 +104,13 @@ public class Product extends DataBaseEmailRecord {
      */
 
     public User getUser() throws SQLException {
-        this.user = DAL.getUserForProduct(this);
+       if(this.user == null) {
+          setUser();
+       }
         return this.user;
     }
+
+
 
     /**
      *
@@ -119,7 +129,11 @@ public class Product extends DataBaseEmailRecord {
      */
 
     public List<Image> getImageList() throws SQLException {
-        this.imageList = DAL.getImages(this);
+
+       if(imageList == null){
+           setImageList();
+       }
+
         return imageList;
     }
 
@@ -134,7 +148,7 @@ public class Product extends DataBaseEmailRecord {
     private void fill(ResultSet result) throws SQLException {
         this.id = result.getInt(Product.DB_ID);
         this.name = result.getString(Product.DB_NAME);
-        this.type = Category.valueOf(result.getString(Product.DB_TYPE));
+        this.category = Category.valueOf(result.getString(Product.DB_CATEGORY));
         this.description = result.getString(Product.DB_DESCRIPTION);
         this.price = result.getFloat(Product.DB_PRICE);
         this.email = result.getString(Product.DB_EMAIL);
@@ -144,7 +158,7 @@ public class Product extends DataBaseEmailRecord {
 
 
     @Override
-    protected int dbSave() throws SQLException {
+    public int dbSave() throws SQLException {
         if(getId() < 0){
             return dbAdd();
         }else {
@@ -153,13 +167,28 @@ public class Product extends DataBaseEmailRecord {
     }
 
     @Override
-    public int dbAdd() throws SQLException {
+    protected int dbAdd() throws SQLException {
         setId(DAL.addProduct(this));
         return getId();
     }
 
     @Override
     protected int dbUpdate() throws SQLException {
-        return DAL.updateProduct(this);
+        return DAL.editProduct(this);
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "email='" + email + '\'' +
+                ", id=" + id +
+                ", dateCreated=" + dateCreated +
+                ", name='" + name + '\'' +
+                ", category=" + category +
+                ", description='" + description + '\'' +
+                ", imageList=" + imageList +
+                ", price=" + price +
+                ", user=" + user +
+                '}';
     }
 }

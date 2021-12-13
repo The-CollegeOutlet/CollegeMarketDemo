@@ -17,7 +17,7 @@ PRIMARY KEY (id)
 create table `products`(
 `id`  int(11) not null primary key auto_increment,
 `name` varchar(40) not null,
-`type` varchar(20) not null,
+`category` varchar(20) not null,
 `description` varchar(200) not null,
 `price` DECIMAL(13,2) not null,
 `email` varchar(80) not null,

@@ -89,25 +89,14 @@ public class User extends DataBaseEmailRecord {
     }
 
 
-
-
-
-    public boolean addProduct(Product product){
-        return productList.add(product);
-    }
-
-    public boolean removeProduct(Product product){
-        for(Product element : productList){
-            if(element.equals(product)){
-                return productList.remove(product);
-            }
-
-        }
-        return false;
+    private void setProductList() throws SQLException {
+        this.productList = DAL.getAllUserProducts(this);
     }
 
     public List<Product> getProductList() throws SQLException {
-        this.productList = DAL.getAllUserProducts(this);
+        if(productList == null) {
+           setProductList();
+        }
         return this.productList;
     }
 
@@ -118,6 +107,7 @@ public class User extends DataBaseEmailRecord {
         this.email =  result.getString(User.DB_EMAIL);
         this.password =  result.getString(User.DB_PASSWORD);
         this.dateCreated = result.getDate(User.DB_DATE_CREATED);
+
 
 
     }
@@ -132,6 +122,30 @@ public class User extends DataBaseEmailRecord {
         return super.equals(object) && Objects.equals(password, user.password) ;
     }
 
+
+
+    @Override
+    public int dbSave() throws SQLException {
+        if(this.getId() < 0){
+            return dbAdd();
+        }else {
+            return dbUpdate();
+        }
+
+    }
+
+    @Override
+    protected int dbAdd() throws SQLException {
+        setId(DAL.addUser(this));
+        return this.getId();
+    }
+
+    @Override
+    protected int dbUpdate() throws SQLException {
+        return DAL.editUser(this);
+    }
+
+
     @Override
     public String toString() {
         return "User{" +
@@ -143,27 +157,6 @@ public class User extends DataBaseEmailRecord {
                 ", password='" + password + '\'' +
                 ", productList=" + productList +
                 '}';
-    }
-
-
-    @Override
-    public int dbSave() throws SQLException {
-        if(getId() < 0){
-            return dbAdd();
-        }else
-            return dbUpdate();
-
-    }
-
-    @Override
-    protected int dbAdd() throws SQLException {
-        setId(DAL.addUser(this));
-        return getId();
-    }
-
-    @Override
-    protected int dbUpdate() throws SQLException {
-        return DAL.updateUser(this);
     }
 
 

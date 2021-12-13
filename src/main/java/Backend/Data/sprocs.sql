@@ -5,6 +5,7 @@ DROP PROCEDURE IF EXISTS AddProducts;
 DROP PROCEDURE IF EXISTS GetAllProducts;
 DROP PROCEDURE IF EXISTS EditProduct;
 DROP PROCEDURE IF EXISTS GetUserForProduct;
+DROP PROCEDURE IF EXISTS GetProduct;
 
 
 DROP PROCEDURE IF EXISTS AddImages;
@@ -37,11 +38,11 @@ DROP PROCEDURE IF EXISTS GetUserByEmail;
 
 DELIMITER //
 
-CREATE PROCEDURE AddProducts(OUT _id int(11), IN _name varchar(40), IN _type VARCHAR(20),IN _description VARCHAR(200)
+CREATE PROCEDURE AddProducts(OUT _id int(11), IN _name varchar(40), IN _category VARCHAR(20),IN _description VARCHAR(200)
                            , IN _price DECIMAL(13,2), _email VARCHAR(80), IN _dateCreated DATE )
 BEGIN
-    INSERT INTO products(NAME ,TYPE, DESCRIPTION,  PRICE, EMAIL, DATECREATED)
-    VALUES (_name , _type, _description, _price, _email, _dateCreated);
+    INSERT INTO products(NAME ,CATEGORY, DESCRIPTION,  PRICE, EMAIL, DATECREATED)
+    VALUES (_name , _category, _description, _price, _email, _dateCreated);
 
     SET _id = LAST_INSERT_ID();
 
@@ -58,14 +59,14 @@ DELIMITER ;
  */
 
 DELIMITER //
-CREATE PROCEDURE EditProduct(IN _id int(11), IN _name varchar(40),IN _type VARCHAR(20),IN _description VARCHAR(200)
+CREATE PROCEDURE EditProduct(IN _id int(11), IN _name varchar(40),IN _category VARCHAR(20),IN _description VARCHAR(200)
 , IN _price DECIMAL(13,2), _email VARCHAR(80), IN _dateCreated date )
 
 BEGIN
     UPDATE products
     SET
         name = _name,
-        type = _type,
+        CATEGORY = _category,
         description = _description,
         price = _price,
         DATECREATED = _dateCreated
@@ -92,8 +93,28 @@ END //
 DELIMITER ;
 
 
+/**
+  @@returns the image associated with the id
 
-/**@@param: Takes in email
+ */
+
+DELIMITER //
+
+CREATE PROCEDURE GetProduct(IN _id INT(11))
+BEGIN
+    SELECT *  FROM products
+
+    WHERE products.id = _id;
+
+END //
+
+DELIMITER ;
+
+
+
+
+/** Using the user email to get all user products
+  @@param: Takes in email
   @@Gets all products from owned by a user
  */
 DELIMITER //
@@ -102,7 +123,7 @@ CREATE PROCEDURE GetAllUserProducts(
     IN _email VARCHAR(80)
 )
 BEGIN
-    SELECT products.id, products.name, products.type, products.description,
+    SELECT products.id, products.name, products.CATEGORY, products.description,
            products.price, products.email, products.dateCreated
 
     FROM products,users
@@ -112,8 +133,9 @@ END //
 DELIMITER ;
 
 
-/**@@param: Takes in email
-  @@Gets all products from owned by a user
+/**  Using a product to get the user basically
+    @@param: Takes in id
+    @@returns The User for product
  */
 DELIMITER //
 
