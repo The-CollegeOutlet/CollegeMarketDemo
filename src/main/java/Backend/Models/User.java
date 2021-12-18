@@ -16,8 +16,6 @@ public class User extends DataBaseEmailRecord {
 
 
     /**
-     *
-     *
      * Private variables
      * @firstname User First Name
      * @lastname User Last Name
@@ -54,7 +52,7 @@ public class User extends DataBaseEmailRecord {
     static final String DB_DATE_CREATED = "dateCreated";
 
     /**
-     *
+     * @param id User id
      * @param firstName User firstname
      * @param lastName User lastname
      * @param email User email
@@ -62,8 +60,8 @@ public class User extends DataBaseEmailRecord {
      *
      */
 
-    public User(String firstName, String lastName, String email, String password) {
-
+    public User(int id, String firstName, String lastName, String email, String password) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -73,15 +71,18 @@ public class User extends DataBaseEmailRecord {
 
     }
 
-    public User(String email) {
-        this.email = email;
-
+    public User() {
+        this.firstName = "";
+        this.lastName = "";
+        this.email = "";
+        this.password = "";
+        this.productList = new ArrayList<>();
+        this.dateCreated = new Date();
     }
 
     /**
      * Creates User from the DataBase
      * @param result Database query result
-     * @throws SQLException
      */
 
     public User(ResultSet result) throws SQLException {
@@ -89,11 +90,11 @@ public class User extends DataBaseEmailRecord {
     }
 
 
-    private void setProductList() throws SQLException {
+    private void setProductList() throws Exception {
         this.productList = DAL.getAllUserProducts(this);
     }
 
-    public List<Product> getProductList() throws SQLException {
+    public List<Product> getProductList() throws Exception {
         if(productList == null) {
            setProductList();
         }
@@ -125,7 +126,7 @@ public class User extends DataBaseEmailRecord {
 
 
     @Override
-    public int dbSave() throws SQLException {
+    public int dbSave() throws Exception {
         if(this.getId() < 0){
             return dbAdd();
         }else {
@@ -135,13 +136,13 @@ public class User extends DataBaseEmailRecord {
     }
 
     @Override
-    protected int dbAdd() throws SQLException {
+    protected int dbAdd() throws Exception {
         setId(DAL.addUser(this));
         return this.getId();
     }
 
     @Override
-    protected int dbUpdate() throws SQLException {
+    protected int dbUpdate() throws Exception {
         return DAL.editUser(this);
     }
 

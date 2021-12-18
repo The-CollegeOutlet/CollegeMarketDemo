@@ -40,10 +40,10 @@ public class DAL {
      * Creates Connection to the Database
      *
      * @return
-     * @throws SQLException
+     * @throws Exception
      */
 
-    private static Connection connectToDatabase() throws SQLException {
+    private static Connection connectToDatabase() throws Exception {
 
         url = "jdbc:mysql://localhost:3306/collegemarket";
         user = "root";
@@ -53,7 +53,7 @@ public class DAL {
             connection = DriverManager.getConnection(url, user, password);
             return connection;
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return connection;
@@ -73,7 +73,7 @@ public class DAL {
      * @param user User object
      */
 
-    protected static int addUser(User user) throws SQLException {
+    protected static int addUser(User user) throws Exception {
 
         int id = -1;
 
@@ -91,7 +91,7 @@ public class DAL {
 
             id = callableStatement.getInt(1);
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
 
         } finally {
@@ -109,9 +109,9 @@ public class DAL {
      * @param user Edited User
      * @return int The number of rows affected should return 1
      * returns 0 or less on failure 
-     * @throws SQLException
+     * @throws Exception
      */
-    protected static int editUser(User user) throws SQLException {
+    protected static int editUser(User user) throws Exception {
 
         int rowsAffected = 0;
 
@@ -125,7 +125,7 @@ public class DAL {
 
             rowsAffected = callableStatement.executeUpdate();
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
 
         } finally {
@@ -140,10 +140,10 @@ public class DAL {
     /**
      * @param email User email
      * @return User of the email parameter
-     * @throws SQLException
+     * @throws Exception
      */
 
-    public static User getUserByEmail(String email) throws SQLException {
+    public static User getUserByEmail(String email) throws Exception {
         sqlCommand = "{call GetUserByEmail(?) }";
         User user = null;
 
@@ -156,7 +156,7 @@ public class DAL {
                 user = new User(result);
             }
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             callableStatement.close();
@@ -166,7 +166,7 @@ public class DAL {
         return user;
     }
 
-    public static User getUser(String email, String password) throws SQLException {
+    public static User getUser(String email, String password) throws Exception {
 
         // Retries the user via email
         User user = getUserByEmail(email);
@@ -179,7 +179,7 @@ public class DAL {
                 /*
 
                   We are going to implemnet a hasher here to
-                  fot security purposes
+                  get security purposes
                  */
 
                 //Password match
@@ -197,9 +197,9 @@ public class DAL {
     /**
      * @param id of the User
      * @return User of the id given
-     * @throws SQLException
+     * @throws Exception
      */
-    public static User getUser(int id) throws SQLException {
+    public static User getUser(int id) throws Exception {
         User user = null;
 
         sqlCommand = "{call GetUser(?)}";
@@ -213,7 +213,7 @@ public class DAL {
                 user = new User(resultSet);
             }
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             callableStatement.close();
@@ -228,10 +228,10 @@ public class DAL {
     /**
      * @param product The product that needs to know its user
      * @return User The owner of the product
-     * @throws SQLException
+     * @throws Exception
      */
 
-    protected static User getUserForProduct(Product product) throws SQLException {
+    protected static User getUserForProduct(Product product) throws Exception {
 
         User user = null;
         sqlCommand = "{call GetUserForProduct(?)}";
@@ -245,7 +245,7 @@ public class DAL {
                 user = new User(resultSet);
             }
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             callableStatement.close();
@@ -257,9 +257,9 @@ public class DAL {
 
     /**
      * @return The list of all users
-     * @throws SQLException
+     * @throws Exception
      */
-    protected static List<User> getAllUsers() throws SQLException {
+    protected static List<User> getAllUsers() throws Exception {
         List<User> users = new ArrayList<>();
 
         sqlCommand = "{call GetAllUsers}";
@@ -271,7 +271,7 @@ public class DAL {
                 users.add(new User(resultSet));
             }
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             callableStatement.close();
@@ -291,38 +291,41 @@ public class DAL {
      * Has not been tested yet, probably have to work on this again
      * Change to liST<iMAGE>
      *
-     * @param image The product that needs to an image added
+     * @param product The product that needs to an image added
      * @return id Image ID if the image is successfully stored in the DB
      * returns int less than 1 on failure
-     * @throws SQLException
+     * @throws Exception
      */
 
-    protected static int addImage(Image image) throws SQLException {
+    protected static int addImages(Product product) throws Exception {
         
         int id = -1;
 
         sqlCommand = "{call AddImages(?,?,?,?)}";
-        sqlDate = new Date(image.getDateCreated().getTime());
-
+        sqlDate = new Date(product.getDateCreated().getTime());
 
         try {
+
             callableStatement = connectToDatabase().prepareCall(sqlCommand);
+            callableStatement.registerOutParameter(1, Types.INTEGER);
+            callableStatement.setInt(3, product.getId());
 
-            callableStatement.registerOutParameter(1,Types.INTEGER);
-            callImage(image);
+            for (Image image : product.getImageList()) {
+                callImage(image);
+                callableStatement.execute();
 
+                id = callableStatement.getInt(1);
 
-             callableStatement.execute();
-
-             id = callableStatement.getInt(1);
-
-
-        } catch (Exception ex) {
+            }
+        }catch (Exception ex){
             ex.printStackTrace();
-        } finally {
+        }finally {
             callableStatement.close();
-
+            connectToDatabase().close();
         }
+
+
+
 
         return id;
     }
@@ -334,7 +337,7 @@ public class DAL {
      * returns 0 or less than 0 on failure
      */
 
-    protected static int updateImage(Image image) throws SQLException {
+    protected static int updateImage(Image image) throws Exception {
 
         int rowsAffected = -1;
 
@@ -366,43 +369,29 @@ public class DAL {
     /**
      * Fills in stored procedure parameters using model
      * @param image
-     * @throws SQLException
+     * @throws Exception
      */
 
-    private static void callImage(Image image) throws SQLException {
+    private static void callImage(Image image) throws Exception {
         callableStatement.setInt(1, image.getId());
         callableStatement.setString(2, image.getFile().getPath());
-        callableStatement.setInt(3, image.getId());
         callableStatement.setDate(4, sqlDate);
-
     }
 
-    protected static List<Image> getImages(Product product) throws SQLException {
+    protected static List<Image> getImages(Product product) throws Exception {
         List<Image> imageList = new ArrayList<>();
 
-        sqlCommand = "{call GetImages(?)}";
+        sqlCommand = "{call GetImagesforProduct(?)}";
 
         try {
 
             callableStatement = connectToDatabase().prepareCall(sqlCommand);
             callableStatement.setInt(1, product.getId());
-            ResultSet resultSet = callableStatement.executeQuery();
+            ResultSet result = callableStatement.executeQuery();
 
-            byte[] byteArray;
-            Blob blob;
-            FileOutputStream writer = null;
-            int imageName = 0;
 
-            while (resultSet.next()) {
-                imageName++;
-                File file = new File("C:\\Users\\Daniel\\Desktop\\CollegeMarketDemo\\src\\main\\resources\\public" + "\\" + imageName + ".jpg");
-                writer = new FileOutputStream(file);
-                blob = resultSet.getBlob(Image.DB_IMAGE);
-                byteArray = blob.getBytes(1, (int) blob.length());
-                writer.write(byteArray);
-
-                Image image = new Image(file);
-                //image.id = resultSet.getInt(Image.DB_ID);
+            while (result.next()) {
+                Image image = new Image(result);
                 imageList.add(image);
             }
 
@@ -417,7 +406,7 @@ public class DAL {
         return imageList;
     }
 
-    protected static List<Image> getAllImages() throws SQLException {
+    protected static List<Image> getAllImages() throws Exception {
         List<Image> images = new ArrayList<>();
 
         sqlCommand = "{call GetAllImages}";
@@ -429,27 +418,6 @@ public class DAL {
             callableStatement = connectToDatabase().prepareCall(sqlCommand);
             ResultSet resultSet = callableStatement.executeQuery();
 
-
-            byte[] byteArray;
-            Blob blob;
-            FileOutputStream writer = null;
-            int imageName = 0;
-
-            while (resultSet.next()) {
-                imageName++;
-                File file = new File("C:\\Users\\Daniel\\Desktop\\CollegeMarketDemo\\src\\main\\resources\\public" + "\\" + imageName + ".jpg");
-                writer = new FileOutputStream(file);
-                blob = resultSet.getBlob("image");
-                byteArray = blob.getBytes(1, (int) blob.length());
-                writer.write(byteArray);
-                images.add(new Image(file));
-                //  image.id = resultSet.getInt(Image.DB_ID);
-
-            }
-
-            if (writer != null) {
-                writer.close();
-            }
 
 
         } catch (Exception ex) {
@@ -469,7 +437,7 @@ public class DAL {
      */
 
 
-    protected static int addProduct(Product product) throws SQLException {
+    protected static int addProduct(Product product) throws Exception {
 
         int id = -1;
 
@@ -483,11 +451,12 @@ public class DAL {
             productCall(product);
 
 
-
             callableStatement.execute();
             id = callableStatement.getInt(1);
 
-        } catch (SQLException e) {
+
+
+        } catch (Exception e) {
             e.printStackTrace();
         }finally {
             callableStatement.close();
@@ -500,7 +469,7 @@ public class DAL {
 
 
 
-    protected static int editProduct(Product product) throws SQLException {
+    protected static int editProduct(Product product) throws Exception {
         int rowsAffected = -1;
 
         sqlCommand = "{call EditProduct(?,?,?,?,?,?,?)}";
@@ -515,7 +484,7 @@ public class DAL {
             rowsAffected =  callableStatement.executeUpdate();
 
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }finally {
             callableStatement.close();
@@ -527,7 +496,7 @@ public class DAL {
 
     }
 
-    public static Product getProduct(int id) throws SQLException{
+    public static Product getProduct(int id) throws Exception{
         Product product = null;
 
         sqlCommand = "{call GetProduct(?)}";
@@ -542,7 +511,7 @@ public class DAL {
                product = new Product(result);
             }
 
-        }catch(SQLException ex){
+        }catch(Exception ex){
             ex.printStackTrace();
         }finally {
             callableStatement.close();
@@ -554,10 +523,10 @@ public class DAL {
     /**
      * @param user The user who is requesting a list of products owned
      * @return products The list of products owned by the user
-     * @throws SQLException
+     * @throws Exception
      */
 
-    protected static List<Product> getAllUserProducts(User user) throws SQLException {
+    protected static List<Product> getAllUserProducts(User user) throws Exception {
 
         List<Product> products = new ArrayList<>();
 
@@ -572,7 +541,7 @@ public class DAL {
                 products.add(new Product(result));
             }
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             callableStatement.close();
@@ -585,9 +554,9 @@ public class DAL {
 
     /**
      * @return The List of all products
-     * @throws SQLException
+     * @throws Exception
      */
-    protected static List<Product> getAllProducts() throws SQLException {
+    public static List<Product> getAllProducts() throws Exception {
         List<Product> products = new ArrayList<>();
 
         sqlCommand = "{call GetAllProducts}";
@@ -599,7 +568,7 @@ public class DAL {
                 products.add(new Product(resultSet));
             }
 
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
             callableStatement.close();
@@ -612,7 +581,7 @@ public class DAL {
 
 
 
-    private static void productCall(Product product) throws SQLException {
+    private static void productCall(Product product) throws Exception {
         callableStatement.setInt(1, product.getId());
         callableStatement.setString(2, product.getName());
         callableStatement.setString(3,String.valueOf(product.getCategory()));
@@ -623,42 +592,13 @@ public class DAL {
 
     }
 
-    private static void userCall(User user) throws SQLException {
+    private static void userCall(User user) throws Exception {
         callableStatement.setInt(1,user.getId());
         callableStatement.setString(2, user.getFirstName());
         callableStatement.setString(3, user.getLastName());
         callableStatement.setString(4, user.getEmail());
         callableStatement.setString(5, user.getPassword());
         callableStatement.setDate(6, sqlDate);
-    }
-
-
-
-    public static void main(String[] args) throws SQLException {
-
-        User usr = new User("Niklaus", "Mikaelson", "ste@gmail.com","original");
-        usr.setId(7);
-        int id = DAL.editUser(usr);
-        System.out.println(id);
-
-        System.out.println(getAllUsers());
-
-
-        /*
-
-        User usr = new User("Elijah", "Mikaelson", "elijah@email.com","original");
-        int id = DAL.addUser(usr);
-        System.out.println(DAL.getAllUsers());
-        System.out.println(id);
-        usr.setFirstName("Niklaus");
-        System.out.println(DAL.updateUser(usr));
-        System.out.println(DAL.getAllUsers());
-
-         */
-
-
-
-
     }
 
 

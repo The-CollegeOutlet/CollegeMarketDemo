@@ -4,6 +4,7 @@ package Backend.Controllers;
 import Backend.Models.DAL;
 import Backend.Models.User;
 import Backend.Util.Path;
+import Backend.Util.Request;
 import Backend.Util.ViewUtil;
 import Backend.Views.User.Create;
 import Backend.Views.User.Edit;
@@ -19,6 +20,16 @@ import java.util.Objects;
 import static Backend.Util.Request.*;
 
 
+/*
+  We should change the user object to a hashmap
+  reasons: with a hashmap we can pass in error messages
+           and possibly success messages
+
+   we can pass the user in to the hashmap
+
+ */
+
+
 public class UserController {
 
     /**
@@ -27,8 +38,9 @@ public class UserController {
      */
 
     public static Handler create = ctx -> {
+        Map<String, Object> model = ViewUtil.baseModel();
 
-        ctx.html(Create.render());
+        ctx.html(Create.render(model));
     };
 
 
@@ -42,12 +54,11 @@ public class UserController {
 
     public static Handler createAction = ctx -> {
 
-        Map<String, Object> model = ViewUtil.baseModel(ctx);
+        Map<String, Object> model = ViewUtil.baseModel();
 
-        User user = null;
+        User user = bindObject(ctx);
 
         if (validatePassword(ctx)) {
-            user = bindObject(ctx);
 
             if (user.dbSave() > 0) {
 
@@ -55,6 +66,9 @@ public class UserController {
                 model.put("authenticationSucceeded", true);
                 ctx.sessionAttribute("model", user);
                 ctx.sessionAttribute("currentUser", user.getId());
+                model.put("authenticationSucceeded", true);
+                model.replace(CURRENTUSER, user);
+                
 
                 /*
                   Redirects the user
@@ -69,7 +83,7 @@ public class UserController {
             } else {
 
                 // User wasn't added to the DataBase
-                ctx.html(Create.render());
+                ctx.html(Create.render(model));
             }
 
         } else {
@@ -80,7 +94,7 @@ public class UserController {
              */
             //The password didn't match or email
             model.put("authenticationFailed", true);
-            ctx.html(Create.render());
+            ctx.html(Create.render(model));
 
         }
 
@@ -88,29 +102,25 @@ public class UserController {
 
 
     public static Handler edit = ctx -> {
+        Map<String, Object> model = ViewUtil.baseModel();
 
         if (ctx.sessionAttribute("currentUser") != null) {
             int id = (int) ctx.sessionAttribute("currentUser");
             User user = DAL.getUser(id);
+            model.replace(CURRENTUSER, user);
 
-            assert user != null;
-            ctx.html(Edit.render(user));
         }
+        ctx.html(Edit.render(model));
     };
 
     public static Handler editAction = ctx -> {
 
-        Map<String, Object> model = ViewUtil.baseModel(ctx);
+        Map<String, Object> model = ViewUtil.baseModel();
+        User user = bindObject(ctx);
+        model.replace(CURRENTUSER, user);
 
-        User user = ctx.sessionAttribute("model");
-        if (user != null) {
-            int temp = user.getId();
-            System.out.println(temp);
-
+            //if the password is validated
             if (validatePassword(ctx)) {
-
-                user = bindObject(ctx);
-                user.setId(temp);
 
 
                 if (user.dbSave() > 0) {
@@ -122,14 +132,15 @@ public class UserController {
                 } else {
 
                     // User wasn't edited to the DataBase
-                    ctx.html(Edit.render(user));
+                    ctx.html(Edit.render(model));
                 }
 
+                //Password isn't validated
+                // return view
+            }else{
+                ctx.html(Edit.render(model));
             }
-        } else {
-            // User password didn't validate(match the confirmation password field)
-            ctx.html(Edit.render(user));
-        }
+
 
     };
 
@@ -141,13 +152,6 @@ public class UserController {
 
     public static Handler login = ctx -> {
 
-    //    Map<String, Object> model = ViewUtil.baseModel(ctx);
-
-      // model.put("loggedOut", removeSessionAttrLoggedOut(ctx));
-        // model.put("loginRedirect", removeSessionAttrLoginRedirect(ctx));
-
-      //  System.out.println(model.get("loggedOut"));
-     //   System.out.println(model.get("loginRedirect"));
 
         ctx.html(Login.render());
     };
@@ -163,21 +167,20 @@ public class UserController {
 
     public static Handler loginAction = ctx -> {
 
-        Map<String, Object> model = ViewUtil.baseModel(ctx);
+      //  Map<String, Object> model = ViewUtil.baseModel();
         User user = login(getQueryEmail(ctx), getQueryPassword(ctx));
 
         if (user != null) {
 
-          //  ctx.sessionAttribute("currentUser", getQueryEmail(ctx));
             ctx.sessionAttribute("currentUser", user.getId());
-            model.put("authenticationSucceeded", true);
+         //   model.put("authenticationSucceeded", true);
+          //  model.replace("currentUser", user);
             ctx.sessionAttribute("model", user);
-
 
             /*
                   Redirects the user
              */
-           // System.out.println(getFormParamRedirect(ctx));
+
             if (getFormParamRedirect(ctx) != null) {
                 ctx.redirect(getFormParamRedirect(ctx));
             } else {
@@ -186,7 +189,7 @@ public class UserController {
 
 
         } else {
-            model.put("authenticationFailed", true);
+          //  model.put("authenticationFailed", true);
             ctx.html(Login.render());
         }
 
@@ -216,7 +219,7 @@ public class UserController {
 
 
         if (user != null) {
-            ctx.html(Index.render(user));
+            ctx.html(Index.render(user, true, true));
         }
 
     };
@@ -278,8 +281,11 @@ public class UserController {
     }
 
     private static User bindObject(Context ctx) {
+        String temp = getQueryId(ctx);
+        int id = Integer.parseInt(temp);
+        User user =  new User(id, getQueryFirstName(ctx), getQueryLastName(ctx), getQueryEmail(ctx), getQueryPassword(ctx));
 
-        return new User(getQueryFirstName(ctx), getQueryLastName(ctx), getQueryEmail(ctx), getQueryPassword(ctx));
+        return user;
     }
 
     /**
@@ -288,10 +294,9 @@ public class UserController {
      *
      * @param email    Requires verification with DataBase
      * @param password Requires verification with DataBase
-     * @return
-     * @throws SQLException
+     * @return User logged in User
      */
-    private static User login(String email, String password) throws SQLException {
+    private static User login(String email, String password) throws Exception {
 
         return DAL.getUser(email, password);
     }

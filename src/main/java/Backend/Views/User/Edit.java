@@ -2,12 +2,18 @@ package Backend.Views.User;
 
 import Backend.Models.User;
 import Backend.Util.Path;
+import Backend.Util.Request;
+
+import java.util.Map;
 
 import static j2html.TagCreator.*;
 
 public class Edit {
 
-    public static String render(User user){
+    public static String render(Map<String, Object> model){
+
+        User user = (User) model.get(Request.CURRENTUSER);
+
         return html(
                 head(
                                 meta().withCharset("UTF-8"),
@@ -22,71 +28,14 @@ public class Edit {
                                         h2("It's free and only takes a minute"),
 
 
-                                        /**
-                                         * We will be replaced with a partial(visual function)
-                                         * so we can reuse it for edit
+                                        /*
+                                          We will be replaced with a partial(visual function)
+                                          so we can reuse it for edit
                                          */
 
-                                        form().withMethod("post").withAction(Path.EDITUSER).with(
-
-                                                label("First Name")
-                                                        .withFor("firstname"),
-
-                                                input().withType("text")
-                                                        .withId("firstname")
-                                                        .withName("firstname")
-                                                        .withValue(user.getFirstName())
-                                                        .isRequired(),
+                                        FormPartial.userForm(user),
 
 
-                                                label("Last Name")
-                                                        .withFor("lastname"),
-
-                                                input().withType("text")
-                                                        .withId("lastname")
-                                                        .withName("lastname")
-                                                        .withValue(user.getLastName())
-                                                        .isRequired(),
-
-
-                                                label("Email")
-                                                        .withFor("email"),
-
-
-                                                input().withType("email")
-                                                        .withId("email")
-                                                        .withName("email")
-                                                        .withValue(user.getEmail())
-                                                        .isRequired()
-                                                        .isReadonly(),
-
-
-
-
-                                                label("Password")
-                                                        .withFor("password"),
-
-
-                                                input().withType("password")
-                                                        .withId("password")
-                                                        .withName("password")
-                                                        .withValue(user.getPassword())
-                                                        .isRequired(),
-
-
-
-                                                label("Confirm Password")
-                                                        .withFor("confirm-password"),
-
-                                                input().withType("password")
-                                                        .withId("confirm-password")
-                                                        .withName("confirm-password")
-                                                        .withValue("")
-                                                        .isRequired(),
-
-                                                input().withType("submit").withValue("Submit")
-
-                                        ),
                                         p("By clicking the Sign up button, you are agree to our").with(
                                                 br(),
                                                 a("Terms and Conditions").withHref(""),

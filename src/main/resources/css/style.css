@@ -8,7 +8,7 @@
 
 
 body{
-    font-family: 'Roboto', sans-serif;
+    /* font-family: 'Roboto', sans-serif; */
 }
 
 
@@ -39,7 +39,7 @@ body{
 }
 
 .site_name{
-    width: 100px;
+    width: 200px;
     margin-left: 15px;
 }
 
@@ -52,6 +52,9 @@ body{
 
 } */
 
+a{
+    text-decoration: none;
+}
 .search_bar form{
     border: 1px solid #ddd;
     height: 35px;
@@ -89,9 +92,11 @@ body{
 
 
 .mainBody{
-    height:  calc(100vh - 70px);
+    /* height:  calc(100vh - 70px); */
     display: flex;
-    overflow-y: hidden;
+    /* overflow-y: hidden; */
+    margin-top: 50px;
+    /* flex-wrap: wrap; */
 }
 
 /* User Side Bar */
@@ -99,7 +104,7 @@ body{
 .user_sidebar{
     float: right;
     height: 100%;
-    width: 230px;
+    width: 250px;
     background-color: #FFFFFF;
     overflow-y: hidden;
 }
@@ -129,35 +134,79 @@ body{
     cursor: pointer;
 }
 
-/* .sidebar::-webkit-scrollbar{
-    display: none;
-} */
 
-/* Images */
-
-.products{
-    background-color: #f9f9f9;
-    width: 100%;
-    height: 100%;
-    padding: 15px 25px;
-    border-top: 1px solid  #ddd;
-    overflow-y: scroll;
-
+.product{
+    position: relative;
+    overflow: hidden;
+    padding: 20px 0;
+    left: 100px;
 }
 
 .product-container{
+
     display: flex;
-    flex-direction: row;
-    justify-content: space-around;
+    /* overflow-y: scroll; */
+    scroll-behavior: smooth;
+
     flex-wrap: wrap;
 
+
+
 }
 
-product{
-    width: 310px;
-    margin-right: 10px;
-    margin-bottom: 30px;
+.product-container ::-webkit-scrollbar{
+    display: none;
 }
 
+.product-card{
+    flex: 0 0 auto;
+    width: 250px;
+    height: 500px;
+    margin-right: 40px;
+    margin-bottom: 40px;
+    padding: 25px 25px 35px 25px;
+    border-style: solid;
+}
 
+.product-image{
+    position: relative;
+    width: 100%;
+    height: 350px;
+    overflow: hidden;
+}
+
+.image{
+    width: 100%;
+    height: 350px;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,.7));
+
+}
+
+.product-info{
+    width: 100%;
+    height: 100px;
+    padding-top: 10px;
+
+}
+
+.product-price{
+    text-transform: uppercase;
+}
+
+.product-name{
+    width: 100%;
+    height: 20px;
+    line-height: 20px;
+    overflow: hidden;
+    opacity: 0.5;
+    text-transform: capitalize;
+    margin: 5px 0;
+}
+
+.product-email{
+    font-weight: 900;
+    font-size: 20px;
+    text-decoration: none;
+}
 /* Body ends */

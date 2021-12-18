@@ -1,12 +1,17 @@
 package Backend.Views.Home;
 
+import Backend.Models.Product;
 import Backend.Util.Path;
+import Backend.Views.Partial;
+
+import java.util.List;
 
 import static j2html.TagCreator.*;
 
 public class Index {
 
-    public static String render() {
+    public static String render(List<Product> products, boolean edit, boolean delete) {
+
         return html(
                 head(
                         meta().withCharset("UTF-8"),
@@ -17,21 +22,19 @@ public class Index {
                 ),
                 body(
 
-                        /**
-                         * Header starts here
+                        /*
+                          Header starts here
                          */
 
                         header(attrs(".header"),
                                 div(attrs(".site_header"),
-                                        p(attrs(".site_name"),
+                                        h1(attrs(".site_name"),
                                                 "The CollegeOutlet"
                                         )
                                 ),
 
                                 /*
-
                                   Search Bar Starts
-
                                  */
 
                                 div(attrs(".search_bar"),
@@ -47,13 +50,10 @@ public class Index {
                                 ),
 
                                    /*
-
                                        Search Bar Ends
-
                                      */
 
-
-                                //    User Icons
+                                //User Icons
 
                                 div(attrs(".user_icon"),
 
@@ -72,119 +72,77 @@ public class Index {
 
                         ),
 
-
                         // Header starts ends
+
+
+                        //  User Side Bar Starts
+
+                        div(attrs(".user_sidebar"),
+                                div(attrs(".sidebar_categories"),
+
+                                        div(attrs(".sidebar_single_category"),
+                                                a().withHref(Path.PROFILE).with(
+                                                        i(attrs(".material-icons"),
+                                                                "perm_identity"),
+                                                        span("Profile")
+                                                )
+
+                                        ),
+
+                                        div(attrs(".sidebar_single_category"),
+                                                a().withHref(Path.EDITUSER).with(
+                                                        i(attrs(".material-icons"),
+                                                                "manage_accounts"),
+                                                        span("Edit Profile")
+
+                                                )
+
+
+                                        ),
+
+                                        div(attrs(".sidebar_single_category"),
+                                                a().withHref(Path.CREATEPRODUCT).with(
+                                                        i(attrs(".material-icons"),
+                                                                "playlist_add"),
+                                                        span("Add Product")
+                                                )
+
+                                        ),
+
+                                        div(attrs(".sidebar_single_category"),
+                                                a().withHref(Path.LOGOUT).with(
+                                                        i(attrs(".material-icons"),
+                                                                "logout"),
+                                                        span("Logout")
+                                                )
+                                        )
+                                )
+                        ),
+
+                                /*
+                                   User Side Bar Ends
+                                 */
 
 
 
 
                         /*
                           Main Body starts
+
+                          The products are listed here
                          */
+
+                        div(h2(" Products ")),
 
                         div(attrs(".mainbody"),
 
-                                //  User Side Bar Starts
-
-                                div(attrs(".user_sidebar"),
-                                        div(attrs(".sidebar_categories"),
-
-                                                div(attrs(".sidebar_single_category"),
-                                                        a().withHref(Path.PROFILE).with(
-                                                                i(attrs(".material-icons"),
-                                                                        "perm_identity"),
-                                                                span("Profile")
-                                                        )
-
-                                                ),
-
-                                                div(attrs(".sidebar_single_category"),
-                                                        a().withHref(Path.EDITUSER).with(
-                                                                i(attrs(".material-icons"),
-                                                                        "manage_accounts"),
-                                                                span("Edit Profile")
-
-                                                        )
-
-
-                                                ),
-
-                                                div(attrs(".sidebar_single_category"),
-                                                        a().withHref(Path.CREATEPRODUCT).with(
-                                                                i(attrs(".material-icons"),
-                                                                        "playlist_add"),
-                                                                span("Add Product")
-                                                        )
-
-                                                ),
-
-                                                div(attrs(".sidebar_single_category"),
-                                                        a().withHref(Path.LOGOUT).with(
-                                                                i(attrs(".material-icons"),
-                                                                        "logout"),
-                                                                span("Logout")
-                                                        )
-                                                )
-                                        )
-                                ),
-
-                                /*
-
-                                   User Side Bar Ends
-
-                                 */
-
-                                /*
-
-                                  Product list starts here
-
-                                 */
-
-
-                                div(attrs(".products"),
-
-                                        h1(" Products "),
-
-                                        /*
-
-                                           Individual Product start here
-
-                                         */
-
-
-                                        /*
-
-                                          A partial will be made
-                                          A partial is a visual function that we can call again
-
-                                          We will use a for loop to iterate through all the images in the product
-                                          list object
-
-                                          method pseudocode
-                                          DivTag listProduct(List<Product>){
-
-                                          }
-
-                                         */
-
-                                        div(attrs(".product"),
-                                                div(attrs(".product_image"),
-                                                        img().withSrc("/3.jpg").withAlt("The Image is currently" +
-                                                                " unable to be to displayed")
-                                                )
-                                        )
-
-
-                                        /*
-
-                                           Individual Product ends here
-
-                                         */
-                                )
+                                //Displays product card
+                                Partial.productSection(products, edit, delete)
                         )
                 )
-
         ).render();
+
+
     }
 
 }

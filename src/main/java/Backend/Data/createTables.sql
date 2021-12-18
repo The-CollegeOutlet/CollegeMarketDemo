@@ -18,7 +18,7 @@ create table `products`(
 `id`  int(11) not null primary key auto_increment,
 `name` varchar(40) not null,
 `category` varchar(20) not null,
-`description` varchar(200) not null,
+`description` varchar(400) not null,
 `price` DECIMAL(13,2) not null,
 `email` varchar(80) not null,
 `dateCreated` date not null,
@@ -27,7 +27,7 @@ FOREIGN KEY (email) REFERENCES users(email)
 
 create table `images`(
 `id` int(11) not null primary key auto_increment,
-`image` varchar(80) not null,
+`image` varchar(300) not null,
 `productID`  int(11) not null,
 `dateCreated` date not null,
 FOREIGN KEY (productID) REFERENCES products(id)

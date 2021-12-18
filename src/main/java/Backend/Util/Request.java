@@ -1,7 +1,10 @@
 package Backend.Util;
 
 import io.javalin.http.Context;
+import io.javalin.http.UploadedFile;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public class Request {
 
@@ -18,6 +21,7 @@ public class Request {
     public static final String PRODUCTDESC = "productDescription";
     public static final String PRODUCTPRICE = "productPrice";
     public static final String PRODUCTCATEGORY = "productCategory";
+    public static final String IMAGE = "images";
     public static final String MODEL = "model";
     public static final String ID = "id";
 
@@ -48,6 +52,8 @@ public class Request {
     public static String getQueryDesc(Context ctx){return ctx.formParam(Request.PRODUCTDESC);}
 
     public static String getQueryCategory(Context ctx){return ctx.formParam(Request.PRODUCTCATEGORY);}
+
+    public static List<UploadedFile> getQueryImage(Context ctx){return ctx.uploadedFiles();}
 
     public static String getQueryPrice(Context ctx){return ctx.formParam(Request.PRODUCTPRICE);}
 

@@ -40,16 +40,20 @@ public class Server {
             post(Path.LOGIN, UserController.loginAction);
 
             get(Path.PROFILE, UserController.index);
-            get("/test", HomeController.test);
             get(Path.LOGOUT, UserController.logout);
 
             get(Path.CREATEPRODUCT, ProductController.create);
             post(Path.CREATEPRODUCT, ProductController.createAction);
 
             get(Path.EDITPRODUCT, ProductController.edit);
-            post(Path.EDITPRODUCT, ProductController.edit);
+            post(Path.EDITPRODUCT, ProductController.editAction);
+
+            //
+            get("/test", HomeController.test);
+            post("/test", HomeController.testAction);
 
         });
+
 
 
     }

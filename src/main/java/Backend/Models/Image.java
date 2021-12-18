@@ -1,7 +1,6 @@
 package Backend.Models;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.File;
 import java.sql.ResultSet;
@@ -9,9 +8,11 @@ import java.sql.SQLException;
 import java.util.Date;
 
 /**
- * The database currently stores a string which will be the image path
  *
- * Reading and storing the file from the computer next challenge
+ *
+ * Images can be stored from the frontend
+ * editing images and displaying mutiple
+ * images next challenge
 
  *
  * Directory : resources/public
@@ -49,15 +50,6 @@ public class Image extends DataBaseRecord{
 
     /**
      *
-     * @param file The Image file
-     */
-
-    public Image(File file){
-        this.file = file;
-    }
-
-    /**
-     *
      */
     public Image(ResultSet result) throws SQLException {
         fill(result);
@@ -69,12 +61,12 @@ public class Image extends DataBaseRecord{
      * @param path image path
      *
      */
-    public Image(String path){
-        this.file = new File(path);
+    public Image(File file){
+        this.file = file;
         this.dateCreated = new Date();
     }
 
-    private void setProduct() throws SQLException {
+    private void setProduct() throws Exception {
         this.product = DAL.getProduct(productId);
     }
 
@@ -83,7 +75,7 @@ public class Image extends DataBaseRecord{
      * @return Product of the Image
      */
 
-    public Product getProduct() throws SQLException {
+    public Product getProduct() throws Exception {
         if (product == null){
             setProduct();
         }
@@ -92,10 +84,9 @@ public class Image extends DataBaseRecord{
 
     private void fill(ResultSet result) throws SQLException {
         this.id = result.getInt(DB_ID);
-        //this.file =
-        this.productId = result.getInt(DB_PRODUCTID);
+        this.file = new File(result.getString(Image.DB_IMAGE));
+         this.productId = result.getInt(DB_PRODUCTID);
         this.dateCreated = result.getDate(Product.DB_DATE_CREATED);
-
 
     }
 
@@ -109,7 +100,7 @@ public class Image extends DataBaseRecord{
     }
 
     @Override
-    protected int dbSave() throws SQLException {
+    protected int dbSave() throws Exception {
         if(getId() < 0){
             return dbAdd();
         }else {
@@ -119,13 +110,13 @@ public class Image extends DataBaseRecord{
     }
 
     @Override
-    public int dbAdd() throws SQLException {
-        setId(DAL.addImage(this));
+    public int dbAdd() throws Exception {
+        setId(DAL.addImages(this.product));
         return getId();
     }
 
     @Override
-    protected int dbUpdate() throws SQLException {
+    protected int dbUpdate() throws Exception {
         return DAL.updateImage(this);
     }
 

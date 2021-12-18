@@ -188,7 +188,7 @@ DELIMITER //
 CREATE PROCEDURE GetImagesforProduct(IN _id INT(11))
 BEGIN
 
-    SELECT images.id, images.image, images.dateCreated
+    SELECT images.id, images.image, images.dateCreated, images.productID
     FROM images, products
     WHERE images.productID = _id && images.productID = products.id;
 
@@ -204,7 +204,7 @@ DELIMITER ;
 
 DELIMITER //
 
-CREATE PROCEDURE AddImages( OUT _id int(11),IN _image VARCHAR(50), IN _productID int(11), IN _dateCreated DATE)
+CREATE PROCEDURE AddImages( OUT _id int(11),IN _image VARCHAR(300), IN _productID int(11), IN _dateCreated DATE)
 BEGIN
 
     INSERT INTO images( IMAGE, PRODUCTID, DATECREATED)

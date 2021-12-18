@@ -9,7 +9,15 @@ public class TestView {
         return html(
                 head(),
                 body(
-                        input().withValue(string).withType("text")
+                        form().withMethod("post").withAction("/test").withEnctype("multipart/form-data").with(
+                            input().withValue(string)
+                                    .withName("images")
+                                    .withType("file")
+                                    .isMultiple()
+                                    .withAccept("image/*")
+                                ,
+                                input().withType("submit").withValue("Submit")
+                        )
                 )
         ).render();
 

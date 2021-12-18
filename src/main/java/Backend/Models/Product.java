@@ -54,13 +54,15 @@ public class Product extends DataBaseEmailRecord {
      * * Might delete later
      *
      * @param name Product name
+     * @param email Owner email
      * @param category Product type
      * @param description Product Description
      * @param price Product price
      * @param email Users email(ISU) address
      */
 
-    public Product(String name, String email, Category category, String description, float price) {
+    public Product(int id,String name, String email, Category category, String description, float price) {
+        this.id = id;
         this.name = name;
         this.category = category;
         this.description = description;
@@ -72,10 +74,15 @@ public class Product extends DataBaseEmailRecord {
 
     /**
      * Testing purposes
-     * @param x
      */
-    public Product(int x){
-        this.id = x;
+    public Product(){
+        this.name = "";
+        this.category = Category.DEFAULT;
+        this.description = "";
+        this.imageList = new ArrayList<>();
+        this.price = 0;
+        this.email = "";
+        this.dateCreated = new Date();
         
     }
 
@@ -89,11 +96,11 @@ public class Product extends DataBaseEmailRecord {
         fill(result);
     }
 
-    private void setImageList() throws SQLException {
+    private void setImageList() throws Exception {
         this.imageList = DAL.getImages(this);
     }
 
-    private void setUser() throws SQLException {
+    private void setUser() throws Exception {
         this.user = DAL.getUserByEmail(this.email);
     }
 
@@ -103,7 +110,7 @@ public class Product extends DataBaseEmailRecord {
      * @throws SQLException
      */
 
-    public User getUser() throws SQLException {
+    public User getUser() throws Exception {
        if(this.user == null) {
           setUser();
        }
@@ -115,25 +122,22 @@ public class Product extends DataBaseEmailRecord {
     /**
      *
      * @param image An image of the product that needs to be added
-     * @return true If the image is added to the Image list
      */
 
-    public boolean addImage(Image image){
-        return imageList.add(image);
+    public void addImage(Image image){
+        imageList.add(image);
     }
 
     /**
      *
      * @return A list of the products images
-     * @throws SQLException
      */
 
-    public List<Image> getImageList() throws SQLException {
+    public List<Image> getImageList() throws Exception {
 
        if(imageList == null){
            setImageList();
        }
-
         return imageList;
     }
 
@@ -158,7 +162,7 @@ public class Product extends DataBaseEmailRecord {
 
 
     @Override
-    public int dbSave() throws SQLException {
+    public int dbSave() throws Exception {
         if(getId() < 0){
             return dbAdd();
         }else {
@@ -167,13 +171,16 @@ public class Product extends DataBaseEmailRecord {
     }
 
     @Override
-    protected int dbAdd() throws SQLException {
+    protected int dbAdd() throws Exception {
         setId(DAL.addProduct(this));
+        if(DAL.addImages(this) < 0){
+            return -1;
+        }
         return getId();
     }
 
     @Override
-    protected int dbUpdate() throws SQLException {
+    protected int dbUpdate() throws Exception {
         return DAL.editProduct(this);
     }
 
