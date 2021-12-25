@@ -14,6 +14,8 @@ public abstract class DataBaseRecord {
     @Setter
     protected int id = -1;
 
+    protected boolean GetFromDatabase = true;
+
 
 
     @Getter
@@ -24,6 +26,14 @@ public abstract class DataBaseRecord {
     protected abstract int dbAdd() throws Exception;
     protected abstract int dbSave() throws Exception;
     protected abstract int dbUpdate() throws Exception;
+
+    public void StopGreedy() {
+        GetFromDatabase = false;
+    }
+
+    public void AllowGreedy() {
+        GetFromDatabase = true;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -33,6 +33,9 @@ public class User extends DataBaseEmailRecord {
     @Getter
     @Setter
     private String password;
+    @Getter
+    @Setter
+    private String salt;
     List<Product> productList;
 
 
@@ -49,7 +52,9 @@ public class User extends DataBaseEmailRecord {
     static final String DB_LASTNAME = "lastname";
     static final String DB_EMAIL = "email";
     static final String DB_PASSWORD = "password";
+    static final String  DB_SALT = "salt";
     static final String DB_DATE_CREATED = "dateCreated";
+
 
     /**
      * @param id User id
@@ -61,6 +66,7 @@ public class User extends DataBaseEmailRecord {
      */
 
     public User(int id, String firstName, String lastName, String email, String password) {
+        StopGreedy();
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -72,6 +78,7 @@ public class User extends DataBaseEmailRecord {
     }
 
     public User() {
+        StopGreedy();
         this.firstName = "";
         this.lastName = "";
         this.email = "";
@@ -95,18 +102,20 @@ public class User extends DataBaseEmailRecord {
     }
 
     public List<Product> getProductList() throws Exception {
-        if(productList == null) {
+        if(GetFromDatabase && productList == null) {
            setProductList();
         }
         return this.productList;
     }
 
     private void fill(ResultSet result) throws SQLException {
+        AllowGreedy();
         this.id = Integer.parseInt(result.getString(User.DB_ID));
         this.firstName = result.getString(User.DB_FIRSTNAME);
         this.lastName =  result.getString(User.DB_LASTNAME);
         this.email =  result.getString(User.DB_EMAIL);
         this.password =  result.getString(User.DB_PASSWORD);
+        this.salt = result.getString(User.DB_SALT);
         this.dateCreated = result.getDate(User.DB_DATE_CREATED);
 
 

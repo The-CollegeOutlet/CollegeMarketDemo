@@ -43,10 +43,11 @@ public class FormPartial {
 
                         select().withName(Request.PRODUCTCATEGORY)
                                 .withId(Request.PRODUCTCATEGORY)
-                                .with(
+                                .with( option("Select a Category")
+                                                .withCondSelected(product.getId() < 0),
                                         each(categories, category ->
                                                 option(category)
-                                                        .withCondSelected(category.equals
+                                                        .withCondSelected(product.getCategory() != null && category.equals
                                                                 (product.getCategory().toString()))
                                         )
                                 ),
@@ -80,7 +81,7 @@ public class FormPartial {
                                 .withFor(Request.PRODUCTPRICE),
 
 
-                        input().withType("text")
+                        input().withType("number")
                                 .withId(Request.PRODUCTPRICE)
                                 .withName(Request.PRODUCTPRICE)
                                 .withValue(String.valueOf(product.getPrice()))

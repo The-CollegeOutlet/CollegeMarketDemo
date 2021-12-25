@@ -10,10 +10,7 @@ public class Path {
     public static final String EDITUSER = "/editProfile";
     public static final String CREATEPRODUCT = "/createProduct";
     public static final String EDITPRODUCT = "/editProduct";
-
-
-
-
-
-
+    public static final String FILTER = "/filter";
+    public static final String SEARCH = "/search";
+    public static final String PRODUCTDETAILS = "/product/details/{id}";
 }

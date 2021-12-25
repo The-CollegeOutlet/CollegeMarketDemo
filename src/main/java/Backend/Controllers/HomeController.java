@@ -1,71 +1,99 @@
 package Backend.Controllers;
 
+import Backend.Models.Category;
 import Backend.Models.DAL;
-import Backend.Models.Image;
 import Backend.Models.Product;
 import Backend.Views.Home.Index;
-import Backend.Views.TestView;
-import io.javalin.core.util.FileUtil;
+import Backend.Views.Partial;
 import io.javalin.http.Handler;
-import io.javalin.http.UploadedFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 
-import static Backend.Util.Request.*;
 
 
 public class HomeController {
 
-    /**
-     *
-     *
-     *
-     *
-     */
+    static List<Product> products;
 
 
     public static Handler index = ctx ->{
-        List<Product> products = DAL.getAllProducts();
-        ctx.html(Index.render(products, false, false));
+        List<Product> productList = DAL.getAllProducts();
+        products = productList;
+        ctx.html(Index.render(productList, false, false));
     };
 
-    public static Handler test = ctx -> {
-        ctx.html(TestView.render("Upload images"));
-    };
 
-    public static Handler testAction = ctx -> {
+    public static Handler search = ctx -> {
+
+        List<Product> searchProducts = new ArrayList<>();
 
 
-        List<UploadedFile> imageList = getQueryImage(ctx);
-        imageList.forEach(uploadedFile -> {
+        if(products == null){
+            products = DAL.getAllProducts();
+        }
+        try{
+            String searchText = ctx.body().toLowerCase();
 
-            InputStream stream = uploadedFile.getContent();
-            File file = new File("src/main/resources/public/"+ uploadedFile.getFilename());
-                    try {
-                        Files.copy(stream, file.toPath() , StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e) {
-                        e.printStackTrace();
+            if(searchText.length() > 0 ) {
+
+                for (Product product : products) {
+                    if (product.getName().toLowerCase().contains(searchText) || product.getDescription().contains(searchText)) {
+                        searchProducts.add(product);
                     }
-
-
-
                 }
+                // Displays the results of the search
+                ctx.result(Partial.productSection(searchProducts, false, false).toString());
+            }
+            else{
 
+                // Displays the Product List
+                ctx.result(Partial.productSection(products, false, false).toString());
+            }
 
+        }catch(Exception ex){
+            ex.printStackTrace();
 
-        );
-
-
-
-
-
-        //ctx.html(TestView.render(""));
+        }
     };
+
+    public static Handler filter = ctx -> {
+
+        List<Product> filteredProducts = new ArrayList<>();
+
+        if(products == null){
+            products = DAL.getAllProducts();
+        }
+        try{
+            String filteredText = ctx.body();
+
+            if(filteredText.length() > 0  && !filteredText.equals("Select a Category")) {
+                Category category = Category.valueOf(filteredText);
+                for (Product product : products) {
+                    if (product.getCategory().equals(category)) {
+                        filteredProducts.add(product);
+                    }
+                }
+                // Displays the results of the search
+                ctx.result(Partial.productSection(filteredProducts, false, false).toString());
+            }
+            else{
+
+                // Displays the Product List
+                ctx.result(Partial.productSection(products, false, false).toString());
+            }
+
+        }catch(Exception ex){
+            ex.printStackTrace();
+
+        }
+
+
+    };
+
+
+
+
+
 
 
 }

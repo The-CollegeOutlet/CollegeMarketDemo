@@ -45,7 +45,8 @@ public class FormPartial {
                         .withId("email")
                         .withName("email")
                         .withValue(user.getEmail())
-                        .isRequired(),
+                        .isRequired()
+                        .withCondContenteditable(user.getId() < 0),
 
 
                 label("Password")
@@ -55,7 +56,7 @@ public class FormPartial {
                 input().withType("password")
                         .withId("password")
                         .withName("password")
-                        .withValue(user.getPassword())
+                       // .withValue("")
                         .isRequired(),
 
 
@@ -65,7 +66,7 @@ public class FormPartial {
                 input().withType("password")
                         .withId("confirm-password")
                         .withName("confirm-password")
-                        .withValue("")
+                      //  .withValue("")
                         .isRequired(),
 
                 input().withType("submit").withValue("Submit")

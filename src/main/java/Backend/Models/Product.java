@@ -58,10 +58,10 @@ public class Product extends DataBaseEmailRecord {
      * @param category Product type
      * @param description Product Description
      * @param price Product price
-     * @param email Users email(ISU) address
      */
 
     public Product(int id,String name, String email, Category category, String description, float price) {
+        StopGreedy();
         this.id = id;
         this.name = name;
         this.category = category;
@@ -76,8 +76,8 @@ public class Product extends DataBaseEmailRecord {
      * Testing purposes
      */
     public Product(){
+        StopGreedy();
         this.name = "";
-        this.category = Category.DEFAULT;
         this.description = "";
         this.imageList = new ArrayList<>();
         this.price = 0;
@@ -111,7 +111,7 @@ public class Product extends DataBaseEmailRecord {
      */
 
     public User getUser() throws Exception {
-       if(this.user == null) {
+       if(GetFromDatabase && this.user == null) {
           setUser();
        }
         return this.user;
@@ -135,7 +135,7 @@ public class Product extends DataBaseEmailRecord {
 
     public List<Image> getImageList() throws Exception {
 
-       if(imageList == null){
+       if(GetFromDatabase && imageList == null){
            setImageList();
        }
         return imageList;
@@ -150,6 +150,7 @@ public class Product extends DataBaseEmailRecord {
 
 
     private void fill(ResultSet result) throws SQLException {
+        AllowGreedy();
         this.id = result.getInt(Product.DB_ID);
         this.name = result.getString(Product.DB_NAME);
         this.category = Category.valueOf(result.getString(Product.DB_CATEGORY));

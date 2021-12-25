@@ -38,8 +38,8 @@ DROP PROCEDURE IF EXISTS GetUserByEmail;
 
 DELIMITER //
 
-CREATE PROCEDURE AddProducts(OUT _id int(11), IN _name varchar(40), IN _category VARCHAR(20),IN _description VARCHAR(200)
-                           , IN _price DECIMAL(13,2), _email VARCHAR(80), IN _dateCreated DATE )
+CREATE PROCEDURE AddProducts(OUT _id int(11), IN _name varchar(40), IN _category VARCHAR(20),IN _description VARCHAR(400)
+                           , IN _price DECIMAL(13,2), _email VARCHAR(191), IN _dateCreated DATE )
 BEGIN
     INSERT INTO products(NAME ,CATEGORY, DESCRIPTION,  PRICE, EMAIL, DATECREATED)
     VALUES (_name , _category, _description, _price, _email, _dateCreated);
@@ -59,8 +59,8 @@ DELIMITER ;
  */
 
 DELIMITER //
-CREATE PROCEDURE EditProduct(IN _id int(11), IN _name varchar(40),IN _category VARCHAR(20),IN _description VARCHAR(200)
-, IN _price DECIMAL(13,2), _email VARCHAR(80), IN _dateCreated date )
+CREATE PROCEDURE EditProduct(IN _id int(11), IN _name varchar(40),IN _category VARCHAR(20),IN _description VARCHAR(400)
+, IN _price DECIMAL(13,2), _email VARCHAR(191), IN _dateCreated date )
 
 BEGIN
     UPDATE products
@@ -120,7 +120,7 @@ DELIMITER ;
 DELIMITER //
 
 CREATE PROCEDURE GetAllUserProducts(
-    IN _email VARCHAR(80)
+    IN _email VARCHAR(191)
 )
 BEGIN
     SELECT products.id, products.name, products.CATEGORY, products.description,
@@ -288,12 +288,12 @@ DELIMITER ;
  */
 
 DELIMITER //
-CREATE PROCEDURE AddUser(OUT _id int(11),IN _firstName VARCHAR(35), IN _lastName VARCHAR(35),
-                            IN _email VARCHAR(80),IN _password VARCHAR(70), IN _dateCreated DATE)
+CREATE PROCEDURE AddUser(OUT _id int(11),IN _firstName VARCHAR(50), IN _lastName VARCHAR(50),
+                            IN _email VARCHAR(191),IN _password VARCHAR(191), IN _salt VARCHAR(100) ,IN _dateCreated DATE)
 
 BEGIN
-    INSERT INTO users(FIRSTNAME, LASTNAME, EMAIL, PASSWORD, DATECREATED)
-    VALUES ( _firstName, _lastName, _email,_password, _dateCreated );
+    INSERT INTO users(FIRSTNAME, LASTNAME, EMAIL, PASSWORD, SALT, DATECREATED)
+    VALUES ( _firstName, _lastName, _email,_password, _salt, _dateCreated );
 
     SET _id = LAST_INSERT_ID();
 
@@ -310,8 +310,8 @@ DELIMITER ;
  */
 
 DELIMITER //
-CREATE PROCEDURE EditUser(IN _id INT(11), IN _firstName VARCHAR(35), IN _lastName VARCHAR(35),
-                         IN _email VARCHAR(80),IN _password VARCHAR(70), IN _dateCreated DATE)
+CREATE PROCEDURE EditUser(IN _id INT(11), IN _firstName VARCHAR(50), IN _lastName VARCHAR(50),
+                         IN _email VARCHAR(191),IN _password VARCHAR(191),IN _salt VARCHAR(100), IN _dateCreated DATE)
 
 BEGIN
     UPDATE users
@@ -320,6 +320,7 @@ BEGIN
         LASTNAME = _lastName,
         EMAIL = _email,
         PASSWORD = _password,
+        SALT = _salt,
         DATECREATED = _dateCreated
     WHERE
           id = _id && email = _email;
@@ -352,7 +353,7 @@ Returns the user by email
 DELIMITER //
 
 
-CREATE PROCEDURE GetUserByEmail( IN _email VARCHAR(80))
+CREATE PROCEDURE GetUserByEmail( IN _email VARCHAR(191))
 BEGIN
     SELECT *  FROM users
     WHERE email = _email;

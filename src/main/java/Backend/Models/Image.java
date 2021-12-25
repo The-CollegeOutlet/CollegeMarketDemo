@@ -62,6 +62,7 @@ public class Image extends DataBaseRecord{
      *
      */
     public Image(File file){
+        StopGreedy();
         this.file = file;
         this.dateCreated = new Date();
     }
@@ -76,16 +77,17 @@ public class Image extends DataBaseRecord{
      */
 
     public Product getProduct() throws Exception {
-        if (product == null){
+        if (GetFromDatabase && product == null){
             setProduct();
         }
         return product;
     }
 
     private void fill(ResultSet result) throws SQLException {
+        AllowGreedy();
         this.id = result.getInt(DB_ID);
         this.file = new File(result.getString(Image.DB_IMAGE));
-         this.productId = result.getInt(DB_PRODUCTID);
+        this.productId = result.getInt(DB_PRODUCTID);
         this.dateCreated = result.getDate(Product.DB_DATE_CREATED);
 
     }

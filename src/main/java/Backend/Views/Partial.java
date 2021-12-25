@@ -22,7 +22,7 @@ public class Partial {
 
     public static Tag productSection(List<Product> products, boolean edit, boolean delete){
 
-        return section(attrs(".products")).with( products.size() != 0 ? productCard(products, edit, delete)
+        return section(attrs(".products")).withId("products").with( products.size() != 0 ? productCard(products, edit, delete)
                 : p("They are currently no products available")
 
         );
@@ -33,7 +33,7 @@ public class Partial {
 
         return div(attrs(".product-container")).with(each(products, product -> {
             try {
-                return div(attrs(".product-card"),
+                return a(div(attrs(".product-card"),
 
                         div(attrs(".product-image"),
                                 img(attrs(".image")).withSrc("/" + product.getImageList().get(0).getFile().getName())
@@ -51,22 +51,29 @@ public class Partial {
                         ),
                         div(attrs(".button-container")).condWith(edit && delete,
 
-                                div(attrs(""), form().withMethod("get").withAction(Path.EDITPRODUCT).with(
+                                div(attrs(".edit"), form().withMethod("get").withAction(Path.EDITPRODUCT).with(
                                         input().withType("text").withName(Request.ID).withId(Request.ID)
                                                 .withValue(String.valueOf(product.getId())).isHidden(),
                                         input().withType("submit").withValue("Edit")
                                 )),
 
-                                div(attrs(""), form().withMethod("get").withAction(Path.EDITPRODUCT).with(
+                                div(attrs(".delete"), form().withMethod("get").withAction(Path.EDITPRODUCT).with(
                                         input().withType("text").withName(Request.ID).withId(Request.ID)
                                                 .withValue(String.valueOf(product.getId())).isHidden(),
                                         input().withType("submit").withValue("Delete")
                                 )))
-                );
+                )).withHref("/product/details/"+product.getId());
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return null;
         }));
     }
-}
+
+
+
+    public static Tag displayImage(Product product, int location) throws Exception {
+        return div(attrs(".product-image"),
+                img(attrs(".image")).withSrc("/" + product.getImageList().get(location).getFile().getName())
+        );
+}}

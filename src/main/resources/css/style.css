@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+/*@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');*/
 
 *{
     margin: 0;
@@ -13,7 +13,12 @@ body{
 
 
 
-
+a{
+    text-decoration: none;
+}
+a:visited{
+    text-decoration: none;
+}
 
 
 /* Header */
@@ -55,6 +60,13 @@ body{
 a{
     text-decoration: none;
 }
+
+.search-bar{
+    width: 100%;
+}
+/*
+
+
 .search_bar form{
     border: 1px solid #ddd;
     height: 35px;
@@ -83,6 +95,10 @@ a{
 
 }
 
+ */
+
+
+
 /* Header ends */
 
 
@@ -91,7 +107,7 @@ a{
 /* Body Begins */
 
 
-.mainBody{
+#mainBody{
     /* height:  calc(100vh - 70px); */
     display: flex;
     /* overflow-y: hidden; */
@@ -207,6 +223,8 @@ a{
 .product-email{
     font-weight: 900;
     font-size: 20px;
-    text-decoration: none;
+    text-decoration: #000000;
 }
+
+
 /* Body ends */

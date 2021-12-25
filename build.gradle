@@ -12,10 +12,10 @@ repositories {
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    annotationProcessor 'org.apache.velocity:velocity:1.7'
+
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 
-    implementation group: 'com.j2html', name: 'j2html', version: '1.5.0'
+
 
 
 
@@ -35,10 +35,16 @@ dependencies {
     //GSON for json parsing
     implementation 'com.google.code.gson:gson:2.8.9'
 
-
+    //MYSQL connectector
     implementation 'mysql:mysql-connector-java:8.0.25'
 
-    implementation group: 'org.apache.velocity', name: 'velocity-engine-core', version: '2.3'
+    //J2HTML for rendering html(views)
+    implementation group: 'com.j2html', name: 'j2html', version: '1.5.0'
+
+    //HASH-FUNCTION for hashing password
+    implementation 'de.rtner:PBKDF2:1.1.4'
+
+
 }
 
 application {

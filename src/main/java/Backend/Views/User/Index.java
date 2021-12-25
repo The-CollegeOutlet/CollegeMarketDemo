@@ -25,6 +25,9 @@ public class Index {
         return html(
 
                 head(
+                        meta().attr("http-equiv","Cache-control" ).withContent("content=no-cache, no-store, must-revalidate"),
+                        meta().attr("http-equiv","Pragma" ).withContent("no-cache"),
+                        meta().attr("http-equiv","Expires").withContent("0"),
                         styleWithInlineFile_min("src/main/resources/css/style.css")
                 ),
 

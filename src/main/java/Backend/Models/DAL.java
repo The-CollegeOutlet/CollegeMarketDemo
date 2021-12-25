@@ -1,18 +1,17 @@
 package Backend.Models;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import static Backend.Util.Hasher.*;
 
 public class DAL {
 
 
-    /**
-     * * DAL methods used query the DataBase
-     * * for model data.
-     * *
+    /*
+     * DAL methods used query the DataBase
+     * for model data.
+     *
      */
 
 
@@ -77,7 +76,7 @@ public class DAL {
 
         int id = -1;
 
-        sqlCommand = "{call AddUser(?,?,?,?,?,?)}";
+        sqlCommand = "{call AddUser(?,?,?,?,?,?,?)}";
         sqlDate = new Date(user.getDateCreated().getTime());
 
         try {
@@ -115,7 +114,7 @@ public class DAL {
 
         int rowsAffected = 0;
 
-        sqlCommand = "{call EditUser(?,?,?,?,?,?)}";
+        sqlCommand = "{call EditUser(?,?,?,?,?,?,?)}";
         sqlDate = new Date(user.getDateCreated().getTime());
 
         try {
@@ -173,14 +172,9 @@ public class DAL {
 
 
         //If the User isn't null
-        if (user != null) {
+        if (user != null && user.getSalt() != null) {
 
-            if (user.getPassword().equals(password)) {
-                /*
-
-                  We are going to implemnet a hasher here to
-                  get security purposes
-                 */
+            if (user.getPassword().equals(hashPassword(password, user.getSalt()))) {
 
                 //Password match
                 return user;
@@ -197,7 +191,6 @@ public class DAL {
     /**
      * @param id of the User
      * @return User of the id given
-     * @throws Exception
      */
     public static User getUser(int id) throws Exception {
         User user = null;
@@ -228,7 +221,6 @@ public class DAL {
     /**
      * @param product The product that needs to know its user
      * @return User The owner of the product
-     * @throws Exception
      */
 
     protected static User getUserForProduct(Product product) throws Exception {
@@ -257,7 +249,6 @@ public class DAL {
 
     /**
      * @return The list of all users
-     * @throws Exception
      */
     protected static List<User> getAllUsers() throws Exception {
         List<User> users = new ArrayList<>();
@@ -294,7 +285,6 @@ public class DAL {
      * @param product The product that needs to an image added
      * @return id Image ID if the image is successfully stored in the DB
      * returns int less than 1 on failure
-     * @throws Exception
      */
 
     protected static int addImages(Product product) throws Exception {
@@ -372,11 +362,7 @@ public class DAL {
      * @throws Exception
      */
 
-    private static void callImage(Image image) throws Exception {
-        callableStatement.setInt(1, image.getId());
-        callableStatement.setString(2, image.getFile().getPath());
-        callableStatement.setDate(4, sqlDate);
-    }
+
 
     protected static List<Image> getImages(Product product) throws Exception {
         List<Image> imageList = new ArrayList<>();
@@ -523,7 +509,6 @@ public class DAL {
     /**
      * @param user The user who is requesting a list of products owned
      * @return products The list of products owned by the user
-     * @throws Exception
      */
 
     protected static List<Product> getAllUserProducts(User user) throws Exception {
@@ -554,7 +539,6 @@ public class DAL {
 
     /**
      * @return The List of all products
-     * @throws Exception
      */
     public static List<Product> getAllProducts() throws Exception {
         List<Product> products = new ArrayList<>();
@@ -598,7 +582,15 @@ public class DAL {
         callableStatement.setString(3, user.getLastName());
         callableStatement.setString(4, user.getEmail());
         callableStatement.setString(5, user.getPassword());
-        callableStatement.setDate(6, sqlDate);
+        callableStatement.setString(6, user.getSalt());
+        callableStatement.setDate(7, sqlDate);
+    }
+
+
+    private static void callImage(Image image) throws Exception {
+        callableStatement.setInt(1, image.getId());
+        callableStatement.setString(2, image.getFile().getPath());
+        callableStatement.setDate(4, sqlDate);
     }
 
 

@@ -4,7 +4,6 @@ package Backend.Controllers;
 import Backend.Models.DAL;
 import Backend.Models.User;
 import Backend.Util.Path;
-import Backend.Util.Request;
 import Backend.Util.ViewUtil;
 import Backend.Views.User.Create;
 import Backend.Views.User.Edit;
@@ -13,11 +12,10 @@ import Backend.Views.User.Index;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 
-import java.sql.SQLException;
 import java.util.Map;
-import java.util.Objects;
 
 import static Backend.Util.Request.*;
+import static Backend.Util.Hasher.*;
 
 
 /*
@@ -55,77 +53,103 @@ public class UserController {
     public static Handler createAction = ctx -> {
 
         Map<String, Object> model = ViewUtil.baseModel();
+        try{
+            User user = bindObject(ctx);
 
-        User user = bindObject(ctx);
+            if (validatePassword(ctx)) {
+                // Hash User password security
+                user.setSalt(generateSalt());
+                user.setPassword(hashPassword(user.getPassword(), user.getSalt()));
 
-        if (validatePassword(ctx)) {
+                if (user.dbSave() > 0) {
 
-            if (user.dbSave() > 0) {
+                    //  ctx.sessionAttribute("currentUser", getQueryEmail(ctx));
+                    model.put("authenticationSucceeded", true);
+                    ctx.sessionAttribute("model", user);
+                    ctx.sessionAttribute("currentUser", user.getId());
+                    model.put("authenticationSucceeded", true);
+                    model.replace(CURRENTUSER, user);
 
-              //  ctx.sessionAttribute("currentUser", getQueryEmail(ctx));
-                model.put("authenticationSucceeded", true);
-                ctx.sessionAttribute("model", user);
-                ctx.sessionAttribute("currentUser", user.getId());
-                model.put("authenticationSucceeded", true);
-                model.replace(CURRENTUSER, user);
-                
 
                 /*
                   Redirects the user
                  */
-                if (getFormParamRedirect(ctx) != null) {
-                    ctx.redirect(getFormParamRedirect(ctx));
+                    if (getFormParamRedirect(ctx) != null) {
+                        ctx.redirect(getFormParamRedirect(ctx));
+                    } else {
+                        ctx.redirect(Path.PROFILE);
+                    }
+
+
                 } else {
-                    ctx.redirect(Path.PROFILE);
+
+                    // User wasn't added to the DataBase
+                    ctx.html(Create.render(model));
                 }
 
-
             } else {
-
-                // User wasn't added to the DataBase
-                ctx.html(Create.render(model));
-            }
-
-        } else {
 
             /*
               We also need to validate the user email
               Email validation to be implemented
              */
-            //The password didn't match or email
-            model.put("authenticationFailed", true);
-            ctx.html(Create.render(model));
-
+                //The password didn't match or email
+                model.put("authenticationFailed", true);
+                ctx.html(Create.render(model));
+            }
+        }catch(Exception ex){
+            ex.printStackTrace();
         }
+
+
+        ctx.html(Create.render(model));
 
     };
 
 
     public static Handler edit = ctx -> {
+
         Map<String, Object> model = ViewUtil.baseModel();
 
-        if (ctx.sessionAttribute("currentUser") != null) {
-            int id = (int) ctx.sessionAttribute("currentUser");
-            User user = DAL.getUser(id);
-            model.replace(CURRENTUSER, user);
+        try{
+            if (ctx.sessionAttribute("currentUser") != null) {
+                int id = (int) ctx.sessionAttribute("currentUser");
+                User user = DAL.getUser(id);
+                model.replace(CURRENTUSER, user);
 
+            }
+        }catch (Exception ex){
+            ex.printStackTrace();
         }
+
         ctx.html(Edit.render(model));
     };
 
     public static Handler editAction = ctx -> {
-
         Map<String, Object> model = ViewUtil.baseModel();
-        User user = bindObject(ctx);
-        model.replace(CURRENTUSER, user);
+
+        try{
+            User currentUser = bindObject(ctx);
+            model.replace(CURRENTUSER, currentUser);
 
             //if the password is validated
             if (validatePassword(ctx)) {
 
+                //Check if password was changed
+                int tempId = Integer.parseInt(ctx.sessionAttribute(CURRENTUSER));
+                User tempUser = DAL.getUser(tempId);
+                String pass = currentUser.getPassword();
 
-                if (user.dbSave() > 0) {
+                if(tempUser.getPassword() != hashPassword(pass, tempUser.getSalt())){
+                    //Password was changed
+                    currentUser.setSalt(generateSalt());
+                    currentUser.setPassword(hashPassword(pass, currentUser.getSalt()));
+                }
+
+                //Save User
+                if (currentUser.dbSave() > 0) {
                     model.put("authenticationSucceeded", true);
-                    ctx.sessionAttribute("model", user);
+                    ctx.sessionAttribute("model", currentUser);
 
                     ctx.redirect(Path.PROFILE);
 
@@ -140,6 +164,11 @@ public class UserController {
             }else{
                 ctx.html(Edit.render(model));
             }
+
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
 
 
     };
@@ -166,32 +195,38 @@ public class UserController {
      */
 
     public static Handler loginAction = ctx -> {
-
       //  Map<String, Object> model = ViewUtil.baseModel();
         User user = login(getQueryEmail(ctx), getQueryPassword(ctx));
+        try{
 
-        if (user != null) {
+            if (user != null) {
 
-            ctx.sessionAttribute("currentUser", user.getId());
-         //   model.put("authenticationSucceeded", true);
-          //  model.replace("currentUser", user);
-            ctx.sessionAttribute("model", user);
+                ctx.sessionAttribute("currentUser", user.getId());
+                //   model.put("authenticationSucceeded", true);
+                //  model.replace("currentUser", user);
+                ctx.sessionAttribute("model", user);
 
             /*
                   Redirects the user
              */
 
-            if (getFormParamRedirect(ctx) != null) {
-                ctx.redirect(getFormParamRedirect(ctx));
+                if (getFormParamRedirect(ctx) != null) {
+                    ctx.redirect(getFormParamRedirect(ctx));
+                } else {
+                    ctx.redirect(Path.PROFILE);
+                }
+
+
             } else {
-                ctx.redirect(Path.PROFILE);
+                //  model.put("authenticationFailed", true);
+                ctx.html(Login.render());
             }
 
-
-        } else {
-          //  model.put("authenticationFailed", true);
-            ctx.html(Login.render());
+        }catch (Exception ex){
+            ex.printStackTrace();
         }
+
+
 
     };
 
@@ -205,6 +240,7 @@ public class UserController {
         ctx.sessionAttribute("currentUser", null);
         ctx.sessionAttribute("loggedOut", "true");
         ctx.sessionAttribute("model", null);
+        ctx.req.getSession().invalidate();
         ctx.redirect(Path.LOGIN);
     };
 
@@ -214,12 +250,20 @@ public class UserController {
      */
     public static Handler index = ctx -> {
 
+        // Prevents response from been cached
+        ctx.res.setHeader("Cache-Control", "no-cache");
+        ctx.res.setHeader("Cache-Control", "no-store");
+        ctx.res.setHeader("Pragma", "no-cache");
+        ctx.res.setDateHeader("Expire", 0);
+
+
         int id = (int) ctx.sessionAttribute("currentUser");
         User user = DAL.getUser(id);
 
 
         if (user != null) {
             ctx.html(Index.render(user, true, true));
+
         }
 
     };

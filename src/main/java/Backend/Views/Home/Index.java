@@ -1,14 +1,22 @@
 package Backend.Views.Home;
 
+import Backend.Models.Category;
 import Backend.Models.Product;
 import Backend.Util.Path;
+import Backend.Util.Request;
 import Backend.Views.Partial;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
 
 public class Index {
+
+    static List<String> categories = Stream.of(Category.values()).map(
+            Category::name).collect(Collectors.toList());
+
 
     public static String render(List<Product> products, boolean edit, boolean delete) {
 
@@ -17,8 +25,8 @@ public class Index {
                         meta().withCharset("UTF-8"),
                         meta().withName("viewport").withContent("width=device-width, initial-scale=1"),
                         link().withRel("stylesheet").withHref("https://fonts.googleapis.com/icon?family=Material+Icons"),
-                        link().withRel("stylesheet").withHref("src/main/resources/public/style.css"),
                         styleWithInlineFile_min("src/main/resources/css/style.css")
+
                 ),
                 body(
 
@@ -33,25 +41,7 @@ public class Index {
                                         )
                                 ),
 
-                                /*
-                                  Search Bar Starts
-                                 */
 
-                                div(attrs(".search_bar"),
-                                        form().withAction("").withMethod("post").with(
-                                                input().withType("text")
-                                                        .withPlaceholder("Search"),
-                                                button().withType("submit")
-                                                        .with(
-                                                                i(attrs(".material-icons"),
-                                                                        "search")
-                                                        )
-                                        )
-                                ),
-
-                                   /*
-                                       Search Bar Ends
-                                     */
 
                                 //User Icons
 
@@ -73,6 +63,43 @@ public class Index {
                         ),
 
                         // Header starts ends
+
+                        //Search Bar Starts
+
+
+                        div(attrs(".search-bar"),
+                                div( form().withAction(Path.SEARCH).withMethod("post").with(
+                                        input().withType("text")
+                                                .withPlaceholder("Search")
+                                                .withId("search")
+                                                .withName("search"),
+                                        // .withOnsearch("search()"),
+                                        button().withType("submit")
+                                                .with(
+                                                        i(attrs(".material-icons"),
+                                                                "search")
+                                                )
+                                )),
+
+                                //Search Bar Ends
+
+
+                                div(
+                                     label("Filter"),
+                                        select().withName(Request.PRODUCTCATEGORY)
+                                                .withId("filter")
+                                                .with(option("Select a Category"),
+                                                        each(categories, category ->
+                                                                option(category)
+                                                        )
+                                                )
+                                )
+
+                        ),
+
+
+
+
 
 
                         //  User Side Bar Starts
@@ -123,9 +150,6 @@ public class Index {
                                    User Side Bar Ends
                                  */
 
-
-
-
                         /*
                           Main Body starts
 
@@ -134,12 +158,13 @@ public class Index {
 
                         div(h2(" Products ")),
 
-                        div(attrs(".mainbody"),
+                        div(attrs("#mainbody"),
 
                                 //Displays product card
                                 Partial.productSection(products, edit, delete)
                         )
-                )
+                ),
+                scriptWithInlineFile_min("src/main/resources/Js/index.js")
         ).render();
 
 

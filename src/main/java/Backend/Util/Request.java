@@ -24,6 +24,8 @@ public class Request {
     public static final String IMAGE = "images";
     public static final String MODEL = "model";
     public static final String ID = "id";
+    public static final String PRODUCT = "product";
+
 
 
 

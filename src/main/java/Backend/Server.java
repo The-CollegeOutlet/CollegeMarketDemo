@@ -2,6 +2,7 @@ package Backend;
 
 import Backend.Controllers.HomeController;
 import Backend.Controllers.ProductController;
+import Backend.Controllers.TestController;
 import Backend.Controllers.UserController;
 import Backend.Util.Path;
 import io.javalin.Javalin;
@@ -19,7 +20,7 @@ public class Server {
 
         Javalin app = Javalin.create(config -> {
             config.addStaticFiles("/public", Location.CLASSPATH);
-        }).start(8000);
+        }).start(7000);
 
 
         app.routes(() -> {
@@ -48,9 +49,17 @@ public class Server {
             get(Path.EDITPRODUCT, ProductController.edit);
             post(Path.EDITPRODUCT, ProductController.editAction);
 
+            post(Path.FILTER, HomeController.filter);
+            post(Path.SEARCH, HomeController.search);
+            get(Path.PRODUCTDETAILS, ProductController.details);
+            get("/next", ProductController.moveRight);
+            get("/previous", ProductController.moveLeft);
             //
-            get("/test", HomeController.test);
-            post("/test", HomeController.testAction);
+            get("/test", TestController.test);
+            post("/test", TestController.testAction);
+
+
+
 
         });
 
